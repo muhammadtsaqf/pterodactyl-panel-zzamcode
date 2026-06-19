@@ -6,6 +6,9 @@ use Pterodactyl\Http\Middleware\Admin\Servers\ServerInstalled;
 
 Route::get('/', [Admin\BaseController::class, 'index'])->name('admin.index');
 
+Route::get('/store', [Admin\StoreController::class, 'index'])->name('admin.store');
+Route::patch('/store', [Admin\StoreController::class, 'update']);
+
 /*
 |--------------------------------------------------------------------------
 | Location Controller Routes
@@ -68,14 +71,12 @@ Route::group(['prefix' => 'settings'], function () {
     Route::get('/', [Admin\Settings\IndexController::class, 'index'])->name('admin.settings');
     Route::get('/mail', [Admin\Settings\MailController::class, 'index'])->name('admin.settings.mail');
     Route::get('/advanced', [Admin\Settings\AdvancedController::class, 'index'])->name('admin.settings.advanced');
-    Route::get('/store', [Admin\Settings\StoreController::class, 'index'])->name('admin.settings.store');
 
     Route::post('/mail/test', [Admin\Settings\MailController::class, 'test'])->name('admin.settings.mail.test');
 
     Route::patch('/', [Admin\Settings\IndexController::class, 'update']);
     Route::patch('/mail', [Admin\Settings\MailController::class, 'update']);
     Route::patch('/advanced', [Admin\Settings\AdvancedController::class, 'update']);
-    Route::patch('/store', [Admin\Settings\StoreController::class, 'update']);
 });
 
 /*

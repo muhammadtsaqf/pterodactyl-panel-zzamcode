@@ -1,6 +1,6 @@
 <?php
 
-namespace Pterodactyl\Http\Controllers\Admin\Settings;
+namespace Pterodactyl\Http\Controllers\Admin;
 
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -29,7 +29,7 @@ class StoreController extends Controller
      */
     public function index(): View
     {
-        return view('admin.settings.store', [
+        return view('admin.store', [
             'nodes' => $this->nodes->all(),
         ]);
     }
@@ -59,6 +59,6 @@ class StoreController extends Controller
 
         $this->alert->success('Store settings have been updated successfully.')->flash();
 
-        return redirect()->route('admin.settings.store');
+        return redirect()->route('admin.store');
     }
 }

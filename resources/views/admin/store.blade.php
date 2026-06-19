@@ -1,5 +1,4 @@
 @extends('layouts.admin')
-@include('partials/admin.settings.nav', ['activeTab' => 'store'])
 
 @section('title')
     Store Settings
@@ -9,15 +8,12 @@
     <h1>Store Settings<small>Configure pricing and resource allocations for the client store.</small></h1>
     <ol class="breadcrumb">
         <li><a href="{{ route('admin.index') }}">Admin</a></li>
-        <li class="active">Settings</li>
         <li class="active">Store</li>
     </ol>
 @endsection
 
 @section('content')
-    @yield('settings::nav')
-
-    <form action="{{ route('admin.settings.store') }}" method="POST">
+    <form action="{{ route('admin.store') }}" method="POST">
         {!! csrf_field() !!}
 
         <div class="settings-card">
