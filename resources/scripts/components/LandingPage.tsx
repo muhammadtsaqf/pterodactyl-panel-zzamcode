@@ -47,7 +47,8 @@ const HeroSection = styled.div`
 `;
 
 const LeftSection = styled.div`
-    ${tw`max-w-xl mt-12 animate-fade-in-up`};
+    ${tw`max-w-xl mt-12`};
+    animation: fadeInUp 0.8s ease-out forwards;
 `;
 
 const Badge = styled.div`
@@ -94,7 +95,8 @@ const ActionButtons = styled.div`
 `;
 
 const RightSection = styled.div`
-    ${tw`hidden md:flex relative w-full max-w-lg items-center justify-center animate-fade-in`};
+    ${tw`hidden md:flex relative w-full max-w-lg items-center justify-center`};
+    animation: fadeIn 1s ease-out forwards;
 `;
 
 const Blob = styled.div`
