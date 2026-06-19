@@ -13,6 +13,8 @@
 @endsection
 
 @section('content')
+    @include('partials.admin.shared-css')
+    
     <form action="{{ route('admin.store') }}" method="POST">
         {!! csrf_field() !!}
 
