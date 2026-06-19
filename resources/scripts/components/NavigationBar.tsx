@@ -11,8 +11,6 @@ import styled from 'styled-components/macro';
 import http from '@/api/http';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
 import Tooltip from '@/components/elements/tooltip/Tooltip';
-import Avatar from '@/components/Avatar';
-
 const RightNavigation = styled.div`
     & > a,
     & > button,
@@ -70,14 +68,6 @@ export default () => {
                     <SearchContainer />
                     
 
-
-                    <Tooltip placement={'bottom'} content={'Account Settings'}>
-                        <NavLink to={'/account'}>
-                            <span className={'flex items-center w-6 h-6 rounded-full overflow-hidden shadow-md'}>
-                                <Avatar.User />
-                            </span>
-                        </NavLink>
-                    </Tooltip>
                 </RightNavigation>
             </div>
         </div>
