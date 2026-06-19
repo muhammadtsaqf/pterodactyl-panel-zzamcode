@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCogs, faLayerGroup, faSignOutAlt, faCreditCard, faWallet } from '@fortawesome/free-solid-svg-icons';
+import { faCogs, faLayerGroup, faSignOutAlt, faCreditCard } from '@fortawesome/free-solid-svg-icons';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
 import SearchContainer from '@/components/dashboard/search/SearchContainer';
@@ -51,7 +51,6 @@ const RightNavigation = styled.div`
 `;
 
 export default () => {
-    const balance = useStoreState((state: ApplicationStore) => state.user.data?.balance || 0);
 
     return (
         <div 
@@ -70,10 +69,7 @@ export default () => {
                 <RightNavigation className={'flex h-full items-center justify-center'}>
                     <SearchContainer />
                     
-                    <div className={'flex items-center px-6 h-full text-neutral-300 font-medium'}>
-                        <FontAwesomeIcon icon={faWallet} className={'mr-2 text-indigo-400'} />
-                        <span>Rp {new Intl.NumberFormat('id-ID').format(balance)}</span>
-                    </div>
+
 
                     <Tooltip placement={'bottom'} content={'Account Settings'}>
                         <NavLink to={'/account'}>
