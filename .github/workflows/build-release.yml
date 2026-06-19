@@ -33,13 +33,11 @@ jobs:
       - name: Remove Unnecessary Files
         run: |
           rm -rf node_modules
-          rm -rf .git
-          rm -rf .github
           rm -rf tests
 
       - name: Create Archive
         run: |
-          tar -czvf ../panel.tar.gz .
+          tar -czvf ../panel.tar.gz --exclude=.git --exclude=.github --exclude=panel.tar.gz .
           mv ../panel.tar.gz ./panel.tar.gz
 
       - name: Upload Release
@@ -51,4 +49,4 @@ jobs:
           git push --delete origin latest || true
           
           # Create new release
-          gh release create latest ./panel.tar.gz --title "Latest zzamcode Panel Build" --notes "Automated build of the latest commit on main branch." --make-latest
+          gh release create latest ./panel.tar.gz --title "Latest zzamcode Panel Build" --notes "Automated build of the latest commit on main branch." --latest
