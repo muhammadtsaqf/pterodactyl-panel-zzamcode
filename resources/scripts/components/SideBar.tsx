@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCogs, faLayerGroup, faSignOutAlt, faCreditCard, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faCogs, faLayerGroup, faSignOutAlt, faCreditCard, faUser, faWallet } from '@fortawesome/free-solid-svg-icons';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
 import tw, { styled } from 'twin.macro';
@@ -105,9 +105,9 @@ export default () => {
                         </NavLink>
                     </NavItem>
                     <NavItem>
-                        <NavLink to={'/account/topup'} exact>
-                            <FontAwesomeIcon icon={faCreditCard} />
-                            <span className="font-medium text-sm tracking-wide">Payment Gateway</span>
+                        <NavLink to={'/topup'} exact>
+                            <FontAwesomeIcon icon={faWallet} />
+                            <span className="font-medium text-sm tracking-wide">Top-up Balance</span>
                         </NavLink>
                     </NavItem>
                     <NavItem>

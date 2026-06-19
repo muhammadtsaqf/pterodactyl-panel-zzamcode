@@ -9,16 +9,18 @@ import Input from '@/components/elements/Input';
 import { faQrcode } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-interface PaymentResponse {
-    qrisUrl: string;
-    checkoutUrl: string;
-    referenceId: string;
+declare global {
+    interface Window {
+        TransaksiKita: {
+            pay: (paymentId: string, options: any) => void;
+            close: () => void;
+        };
+    }
 }
 
 export default () => {
     const [amount, setAmount] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [paymentData, setPaymentData] = useState<PaymentResponse | null>(null);
     const { clearFlashes, addFlash } = useFlash();
 
     const submit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -30,12 +32,41 @@ export default () => {
 
         http.post('/api/client/account/topup', { amount: parseInt(amount, 10) })
             .then(({ data }) => {
-                setPaymentData(data.data);
-                addFlash({
-                    key: 'topup',
-                    type: 'success',
-                    message: 'Payment generated successfully. Please scan the QR code to complete your top-up.',
-                });
+                if (window.TransaksiKita && data.data && data.data.paymentId) {
+                    window.TransaksiKita.pay(data.data.paymentId, {
+                        onSuccess: function() {
+                            addFlash({
+                                key: 'topup',
+                                type: 'success',
+                                message: 'Payment successful! Your balance has been updated.',
+                            });
+                            setAmount('');
+                        },
+                        onExpired: function() {
+                            addFlash({
+                                key: 'topup',
+                                type: 'error',
+                                message: 'Payment expired. Please try again.',
+                            });
+                        },
+                        onClose: function() {
+                            console.log('Payment popup closed');
+                        },
+                        onError: function(err: any) {
+                            addFlash({
+                                key: 'topup',
+                                type: 'error',
+                                message: 'Payment Error: ' + err.message,
+                            });
+                        }
+                    });
+                } else {
+                    addFlash({
+                        key: 'topup',
+                        type: 'error',
+                        message: 'Payment gateway script not loaded properly.',
+                    });
+                }
             })
             .catch((error) => {
                 console.error(error);
@@ -45,7 +76,9 @@ export default () => {
                     message: error.response?.data?.error || 'An error occurred while generating the payment.',
                 });
             })
-            .then(() => setIsSubmitting(false));
+            .finally(() => {
+                setIsSubmitting(false);
+            });
     };
 
     return (
@@ -58,51 +91,29 @@ export default () => {
                             Top-up Balance
                         </h2>
                         
-                        {!paymentData ? (
-                            <form onSubmit={submit}>
-                                <div css={tw`mb-6`}>
-                                    <label css={tw`block text-neutral-300 text-sm font-bold mb-2`}>
-                                        Amount (Minimum Rp 500)
-                                    </label>
-                                    <Input
-                                        type={'number'}
-                                        value={amount}
-                                        onChange={(e) => setAmount(e.target.value)}
-                                        placeholder={'50000'}
-                                        min={500}
-                                        required
-                                    />
-                                    <p css={tw`text-neutral-400 text-xs mt-2`}>
-                                        Enter the amount you wish to add to your account balance.
-                                    </p>
-                                </div>
-                                <div css={tw`flex justify-end`}>
-                                    <Button type={'submit'} disabled={isSubmitting || parseInt(amount, 10) < 500}>
-                                        {isSubmitting ? 'Generating...' : 'Generate QRIS'}
-                                    </Button>
-                                </div>
-                            </form>
-                        ) : (
-                            <div css={tw`text-center`}>
-                                <p css={tw`mb-4 text-neutral-300`}>
-                                    Please scan the QR code below using your favorite e-wallet or banking app.
+                        <form onSubmit={submit}>
+                            <div css={tw`mb-6`}>
+                                <label css={tw`block text-neutral-300 text-sm font-bold mb-2`}>
+                                    Amount (Minimum Rp 500)
+                                </label>
+                                <Input
+                                    type={'number'}
+                                    value={amount}
+                                    onChange={(e) => setAmount(e.target.value)}
+                                    placeholder={'50000'}
+                                    min={500}
+                                    required
+                                />
+                                <p css={tw`text-neutral-400 text-xs mt-2`}>
+                                    Enter the amount you wish to add to your account balance.
                                 </p>
-                                <div css={tw`bg-white p-4 inline-block rounded-lg mb-4`}>
-                                    <img src={paymentData.qrisUrl} alt="QRIS Code" css={tw`w-64 h-64 object-contain`} />
-                                </div>
-                                <p css={tw`text-sm text-neutral-400 mb-6`}>
-                                    Reference ID: <span css={tw`font-mono`}>{paymentData.referenceId}</span>
-                                </p>
-                                <div css={tw`flex justify-center space-x-4`}>
-                                    <Button onClick={() => window.open(paymentData.checkoutUrl, '_blank')} color={'primary'}>
-                                        Open Checkout Page
-                                    </Button>
-                                    <Button onClick={() => setPaymentData(null)} color={'grey'}>
-                                        Top-up Again
-                                    </Button>
-                                </div>
                             </div>
-                        )}
+                            <div css={tw`flex justify-end`}>
+                                <Button type={'submit'} disabled={isSubmitting || parseInt(amount, 10) < 500}>
+                                    {isSubmitting ? 'Processing...' : 'Pay with QRIS'}
+                                </Button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

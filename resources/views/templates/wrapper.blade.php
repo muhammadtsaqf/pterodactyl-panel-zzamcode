@@ -38,6 +38,7 @@
         @yield('assets')
 
         @include('layouts.scripts')
+        <script src="https://transaksikita.com/js/snap.js"></script>
     </head>
     <body class="{{ $css['body'] ?? 'bg-neutral-50' }}">
         @section('content')

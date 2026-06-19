@@ -8,7 +8,7 @@ import SubNavigation from '@/components/elements/SubNavigation';
 import { useLocation } from 'react-router';
 import Spinner from '@/components/elements/Spinner';
 import routes from '@/routers/routes';
-
+import TopupContainer from '@/components/topup/TopupContainer';
 import SideBar from '@/components/SideBar';
 
 export default () => {
@@ -48,6 +48,9 @@ export default () => {
                         <Switch location={location}>
                             <Route path={'/'} exact>
                                 <DashboardContainer />
+                            </Route>
+                            <Route path={'/topup'} exact>
+                                <TopupContainer />
                             </Route>
                             {routes.account.map(({ path, component: Component }) => (
                                 <Route key={path} path={`/account/${path}`.replace('//', '/')} exact>

@@ -14,8 +14,6 @@ import AccountSSHContainer from '@/components/dashboard/ssh/AccountSSHContainer'
 import ActivityLogContainer from '@/components/dashboard/activity/ActivityLogContainer';
 import ServerActivityLogContainer from '@/components/server/ServerActivityLogContainer';
 
-import TopupContainer from '@/components/topup/TopupContainer';
-
 // Each of the router files is already code split out appropriately — so
 // all of the items above will only be loaded in when that router is loaded.
 //
@@ -66,11 +64,6 @@ export default {
             path: '/activity',
             name: 'Activity',
             component: ActivityLogContainer,
-        },
-        {
-            path: '/topup',
-            name: 'Top-up Balance',
-            component: TopupContainer,
         },
     ],
     server: [

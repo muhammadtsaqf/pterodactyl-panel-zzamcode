@@ -64,7 +64,7 @@ class TopupController extends ClientApiController
                 'amount' => (int) $amount,
                 'customerName' => $user->name_first . ' ' . $user->name_last,
                 'description' => 'Topup Balance for ' . $user->username,
-                'expiredMinutes' => 60,
+                'expiredMinutes' => 10,
                 'referenceId' => $referenceId,
             ]),
         ]);
@@ -79,8 +79,7 @@ class TopupController extends ClientApiController
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'qrisUrl' => $decoded['data']['qrisUrl'],
-                    'checkoutUrl' => $decoded['data']['checkoutFullUrl'],
+                    'paymentId' => $decoded['data']['paymentId'],
                     'referenceId' => $referenceId,
                 ]
             ]);
