@@ -26,6 +26,7 @@ jobs:
 
       - name: Build Frontend Assets
         run: |
+          mkdir -p public/assets
           yarn tsc
           yarn build:production
 
