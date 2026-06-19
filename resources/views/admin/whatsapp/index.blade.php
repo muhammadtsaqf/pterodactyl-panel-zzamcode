@@ -155,7 +155,7 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if(response.success) {
-                    showAlert('success', 'Bot berhasil dimatikan dan di-logout.');
+                    showAlert('success', response.message || 'Bot berhasil dimatikan dan di-logout.');
                     $('#pairing-container').hide();
                 } else {
                     showAlert('warning', response.message);

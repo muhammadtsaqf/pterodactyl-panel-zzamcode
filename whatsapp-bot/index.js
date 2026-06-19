@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { makeWASocket, useMultiFileAuthState, DisconnectReason } from '@whiskeysockets/baileys';
+import { makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import axios from 'axios';
 import fs from 'fs';
@@ -34,7 +34,7 @@ async function startBot(targetNumber) {
         auth: state,
         printQRInTerminal: false,
         logger: pino({ level: 'silent' }),
-        browser: ['Pterodactyl Panel', 'Chrome', '1.0.0']
+        browser: Browsers.ubuntu('Chrome')
     });
 
     sock.ev.on('creds.update', saveCreds);
@@ -124,15 +124,22 @@ app.post('/api/start', async (req, res) => {
 });
 
 app.post('/api/stop', async (req, res) => {
+    let message = 'Bot dihentikan.';
     if (sock) {
-        sock.logout();
+        try {
+            sock.logout();
+        } catch (e) {}
         sock = null;
-        currentStatus = 'offline';
-        // Clear auth state to allow new pairing
-        fs.rmSync('auth_info_baileys', { recursive: true, force: true });
-        return res.json({ success: true, status: 'offline' });
     }
-    res.json({ success: false, message: 'Bot is not running.' });
+    currentStatus = 'offline';
+    
+    // Always clear auth state to allow new pairing
+    if (fs.existsSync('auth_info_baileys')) {
+        fs.rmSync('auth_info_baileys', { recursive: true, force: true });
+        message = 'Sesi dihapus dan bot dihentikan.';
+    }
+    
+    return res.json({ success: true, status: 'offline', message });
 });
 
 app.get('/api/status', (req, res) => {
