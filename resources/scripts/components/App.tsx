@@ -14,6 +14,8 @@ import AuthenticatedRoute from '@/components/elements/AuthenticatedRoute';
 import { ServerContext } from '@/state/server';
 import '@/assets/tailwind.css';
 import Spinner from '@/components/elements/Spinner';
+import LandingPage from '@/components/LandingPage';
+import { useStoreState } from '@/state/hooks';
 
 const DashboardRouter = lazy(() => import(/* webpackChunkName: "dashboard" */ '@/routers/DashboardRouter'));
 const ServerRouter = lazy(() => import(/* webpackChunkName: "server" */ '@/routers/ServerRouter'));
@@ -46,6 +48,17 @@ interface ExtendedWindow extends Window {
 }
 
 setupInterceptors(history);
+
+const IndexRoute = () => {
+    const isAuthenticated = useStoreState((state) => !!state.user.data?.uuid);
+    return isAuthenticated ? (
+        <Spinner.Suspense>
+            <DashboardRouter />
+        </Spinner.Suspense>
+    ) : (
+        <LandingPage />
+    );
+};
 
 const App = () => {
     const { PterodactylUser, SiteConfiguration } = window as ExtendedWindow;
@@ -96,6 +109,9 @@ const App = () => {
                                     </ServerContext.Provider>
                                 </Spinner.Suspense>
                             </AuthenticatedRoute>
+                            <Route path={'/'} exact>
+                                <IndexRoute />
+                            </Route>
                             <AuthenticatedRoute path={'/'}>
                                 <Spinner.Suspense>
                                     <DashboardRouter />
