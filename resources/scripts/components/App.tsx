@@ -48,7 +48,7 @@ const App = () => {
             language: PterodactylUser.language,
             rootAdmin: PterodactylUser.root_admin,
             useTotp: PterodactylUser.use_totp,
-            balance: PterodactylUser.balance || 0,
+            balance: Number(PterodactylUser.balance) || 0,
             createdAt: new Date(PterodactylUser.created_at),
             updatedAt: new Date(PterodactylUser.updated_at),
         });

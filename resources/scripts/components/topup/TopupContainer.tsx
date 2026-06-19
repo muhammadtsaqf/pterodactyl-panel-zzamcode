@@ -42,7 +42,7 @@ export default () => {
                 if (window.TransaksiKita && data.data && data.data.paymentId) {
                     window.TransaksiKita.pay(data.data.paymentId, {
                         onSuccess: function() {
-                            updateUserData({ balance: currentBalance + topupAmount });
+                            updateUserData({ balance: Number(currentBalance) + topupAmount });
                             addFlash({
                                 key: 'topup',
                                 type: 'success',
