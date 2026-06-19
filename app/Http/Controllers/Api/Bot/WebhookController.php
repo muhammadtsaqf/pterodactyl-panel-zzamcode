@@ -42,7 +42,7 @@ class WebhookController extends Controller
         $target = $parts[1] ?? null;
 
         if ($command === 'servers' || $command === 'list') {
-            $servers = Server::where('owner_id', $user->id)->get();
+            $servers = Server::with('node')->where('owner_id', $user->id)->get();
             if ($servers->isEmpty()) {
                 return response()->json(['reply' => "Anda belum memiliki server di panel."]);
             }
@@ -50,7 +50,8 @@ class WebhookController extends Controller
             $reply = "🚀 *Daftar Server Anda:*\n\n";
             foreach ($servers as $idx => $srv) {
                 $no = $idx + 1;
-                $reply .= "{$no}. *{$srv->name}*\nID: `{$srv->uuidShort}`\nNode: {$srv->node->name}\n\n";
+                $nodeName = $srv->node ? $srv->node->name : 'Unknown';
+                $reply .= "{$no}. *{$srv->name}*\nID: `{$srv->uuidShort}`\nNode: {$nodeName}\n\n";
             }
             $reply .= "Gunakan perintah `start <ID>`, `stop <ID>`, atau `restart <ID>` untuk mengontrol server Anda.";
             return response()->json(['reply' => $reply]);

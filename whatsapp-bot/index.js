@@ -27,6 +27,25 @@ app.use(express.json());
 let sock = null;
 let currentStatus = 'offline';
 
+const pm2Logs = [];
+const originalLog = console.log;
+const originalError = console.error;
+
+function pushLog(type, args) {
+    const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ');
+    pm2Logs.push(`[${new Date().toISOString()}] [${type.toUpperCase()}] ${msg}`);
+    if (pm2Logs.length > 100) pm2Logs.shift();
+}
+
+console.log = function(...args) {
+    pushLog('info', args);
+    originalLog.apply(console, args);
+};
+console.error = function(...args) {
+    pushLog('error', args);
+    originalError.apply(console, args);
+};
+
 async function startBot(targetNumber) {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
     const { version: v } = await fetchLatestBaileysVersion();
@@ -173,6 +192,10 @@ app.post('/api/clear', async (req, res) => {
 
 app.get('/api/status', (req, res) => {
     res.json({ status: currentStatus, registered: sock?.authState?.creds?.registered || false });
+});
+
+app.get('/api/logs', (req, res) => {
+    res.json({ success: true, logs: pm2Logs });
 });
 
 const PORT = 3001;

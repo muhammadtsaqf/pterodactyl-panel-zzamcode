@@ -98,6 +98,7 @@ Route::get('/whatsapp/status', [Admin\WhatsAppController::class, 'status'])->nam
 Route::post('/whatsapp/start', [Admin\WhatsAppController::class, 'start'])->name('admin.whatsapp.start');
 Route::post('/whatsapp/stop', [Admin\WhatsAppController::class, 'stop'])->name('admin.whatsapp.stop');
 Route::post('/whatsapp/clear', [Admin\WhatsAppController::class, 'clear'])->name('admin.whatsapp.clear');
+Route::get('/whatsapp/logs', [Admin\WhatsAppController::class, 'logs'])->name('admin.whatsapp.logs');
 
 /*
 |--------------------------------------------------------------------------

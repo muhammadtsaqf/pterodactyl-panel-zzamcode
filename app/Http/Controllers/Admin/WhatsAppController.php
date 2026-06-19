@@ -61,4 +61,14 @@ class WhatsAppController extends Controller
             return response()->json(['success' => false, 'message' => 'Cannot connect to bot service.']);
         }
     }
+
+    public function logs(): JsonResponse
+    {
+        try {
+            $response = Http::timeout(3)->get("{$this->botUrl}/api/logs");
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'logs' => ['[SYSTEM] Bot service is currently offline.']]);
+        }
+    }
 }
