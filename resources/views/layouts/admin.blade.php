@@ -193,7 +193,12 @@
                                 <i class="fa fa-users"></i> <span>Users</span>
                             </a>
                         </li>
-                        <li class="header">SERVICE MANAGEMENT</li>
+                        <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.whatsapp') ?: 'active' }}">
+                            <a href="{{ route('admin.whatsapp') }}">
+                                <i class="fa fa-whatsapp"></i> <span>WhatsApp Bot</span>
+                            </a>
+                        </li>
+                        <li class="header">MANAGEMENT</li>
                         <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.mounts') ?: 'active' }}">
                             <a href="{{ route('admin.mounts') }}">
                                 <i class="fa fa-magic"></i> <span>Mounts</span>

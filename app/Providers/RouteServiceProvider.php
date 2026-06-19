@@ -65,6 +65,7 @@ class RouteServiceProvider extends ServiceProvider
                 ->group(base_path('routes/api-remote.php'));
 
             Route::post('/api/webhooks/transaksikita', [\Pterodactyl\Http\Controllers\Api\Webhooks\TransaksikitaController::class, 'handle']);
+            Route::post('/api/bot/webhook', [\Pterodactyl\Http\Controllers\Api\Bot\WebhookController::class, 'handle']);
         });
     }
 

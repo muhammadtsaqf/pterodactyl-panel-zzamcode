@@ -64,6 +64,28 @@ class AccountController extends ClientApiController
     }
 
     /**
+     * Update the authenticated user's WhatsApp number.
+     */
+    public function updateWhatsapp(Request $request): JsonResponse
+    {
+        $request->validate([
+            'whatsapp_number' => 'nullable|string|max:20',
+        ]);
+
+        $user = $request->user();
+        
+        $this->updateService->handle($user, [
+            'whatsapp_number' => $request->input('whatsapp_number')
+        ]);
+
+        Activity::event('user:account.whatsapp-changed')
+            ->property(['number' => $request->input('whatsapp_number')])
+            ->log();
+
+        return new JsonResponse([], Response::HTTP_NO_CONTENT);
+    }
+
+    /**
      * Update the authenticated user's password. All existing sessions will be logged
      * out immediately.
      *

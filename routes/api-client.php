@@ -33,6 +33,7 @@ Route::prefix('/account')->middleware(AccountSubject::class)->group(function () 
         ->name('api:client.account.update-email');
     Route::put('/password', [Client\AccountController::class, 'updatePassword'])->name('api:client.account.update-password');
     Route::put('/profile', [Client\Account\UpdateProfileController::class, 'update'])->name('api:client.account.update-profile');
+    Route::put('/whatsapp', [Client\AccountController::class, 'updateWhatsapp'])->name('api:client.account.update-whatsapp');
 
     Route::get('/activity', Client\ActivityLogController::class)->name('api:client.account.activity');
 

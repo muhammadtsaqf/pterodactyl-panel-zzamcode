@@ -1,0 +1,17 @@
+{
+  "name": "pterodactyl-whatsapp-bot",
+  "version": "1.0.0",
+  "description": "WhatsApp Bot for Pterodactyl Panel",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.6.0",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "pino": "^8.16.1"
+  }
+}

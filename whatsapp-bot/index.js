@@ -1,0 +1,142 @@
+import express from 'express';
+import cors from 'cors';
+import { makeWASocket, useMultiFileAuthState, DisconnectReason } from '@whiskeysockets/baileys';
+import pino from 'pino';
+import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
+
+// Read Pterodactyl .env
+const envPath = path.resolve('../.env');
+let APP_URL = 'http://127.0.0.1';
+let WA_BOT_SECRET = 'pterodactyl_wa_secret';
+
+if (fs.existsSync(envPath)) {
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    const urlMatch = envContent.match(/^APP_URL=(.*)$/m);
+    if (urlMatch) APP_URL = urlMatch[1].trim();
+    
+    const secretMatch = envContent.match(/^WA_BOT_SECRET=(.*)$/m);
+    if (secretMatch) WA_BOT_SECRET = secretMatch[1].trim();
+}
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+let sock = null;
+let currentStatus = 'offline';
+
+async function startBot(targetNumber) {
+    const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+
+    sock = makeWASocket({
+        auth: state,
+        printQRInTerminal: false,
+        logger: pino({ level: 'silent' }),
+        browser: ['Pterodactyl Panel', 'Chrome', '1.0.0']
+    });
+
+    sock.ev.on('creds.update', saveCreds);
+
+    sock.ev.on('connection.update', (update) => {
+        const { connection, lastDisconnect } = update;
+        if (connection === 'close') {
+            const shouldReconnect = lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut;
+            currentStatus = 'offline';
+            if (shouldReconnect) {
+                startBot();
+            } else {
+                sock = null;
+            }
+        } else if (connection === 'open') {
+            currentStatus = 'online';
+        }
+    });
+
+    sock.ev.on('messages.upsert', async (m) => {
+        if (m.type !== 'notify') return;
+        const msg = m.messages[0];
+        if (!msg.message || msg.key.fromMe) return;
+
+        const sender = msg.key.remoteJid.split('@')[0];
+        const text = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
+
+        if (!text) return;
+
+        try {
+            // Forward to Pterodactyl Laravel Webhook
+            const response = await axios.post(`${APP_URL}/api/bot/webhook`, {
+                secret: WA_BOT_SECRET,
+                phone: sender,
+                message: text
+            }, {
+                headers: { 'Accept': 'application/json' },
+                validateStatus: false // Prevent throwing error on 4xx/5xx
+            });
+
+            if (response.data && response.data.reply) {
+                await sock.sendMessage(msg.key.remoteJid, { text: response.data.reply }, { quoted: msg });
+            }
+        } catch (err) {
+            console.error('Failed to send webhook to Pterodactyl:', err.message);
+            await sock.sendMessage(msg.key.remoteJid, { text: 'Bot sedang mengalami gangguan internal.' });
+        }
+    });
+
+    if (!sock.authState.creds.registered && targetNumber) {
+        currentStatus = 'pairing';
+        const code = await sock.requestPairingCode(targetNumber);
+        return code;
+    }
+
+    return null;
+}
+
+app.post('/api/start', async (req, res) => {
+    if (currentStatus === 'online') {
+        return res.json({ success: false, message: 'Bot is already online.' });
+    }
+    
+    const { number } = req.body;
+    try {
+        if (!sock || !sock.authState.creds.registered) {
+            if (!number) return res.json({ success: false, message: 'Number is required for pairing.' });
+            
+            // Format number (remove + or spaces)
+            const cleanNumber = number.replace(/\D/g, '');
+            const code = await startBot(cleanNumber);
+            return res.json({ success: true, pairingCode: code, status: 'pairing' });
+        } else {
+            await startBot();
+            return res.json({ success: true, status: 'connecting' });
+        }
+    } catch (err) {
+        return res.json({ success: false, message: err.message });
+    }
+});
+
+app.post('/api/stop', async (req, res) => {
+    if (sock) {
+        sock.logout();
+        sock = null;
+        currentStatus = 'offline';
+        // Clear auth state to allow new pairing
+        fs.rmSync('auth_info_baileys', { recursive: true, force: true });
+        return res.json({ success: true, status: 'offline' });
+    }
+    res.json({ success: false, message: 'Bot is not running.' });
+});
+
+app.get('/api/status', (req, res) => {
+    res.json({ status: currentStatus, registered: sock?.authState?.creds?.registered || false });
+});
+
+const PORT = 3001;
+app.listen(PORT, () => {
+    console.log(`WhatsApp Bot Service running on port ${PORT}`);
+    // Auto-start if credentials exist
+    if (fs.existsSync('auth_info_baileys/creds.json')) {
+        startBot();
+    }
+});

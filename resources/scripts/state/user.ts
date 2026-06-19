@@ -20,6 +20,7 @@ export interface UserData {
     state?: string;
     zip?: string;
     country?: string;
+    whatsappNumber?: string;
 }
 
 export interface UserStore {
