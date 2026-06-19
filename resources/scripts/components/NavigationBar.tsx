@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCogs, faLayerGroup, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faCogs, faLayerGroup, faSignOutAlt, faWallet } from '@fortawesome/free-solid-svg-icons';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
 import SearchContainer from '@/components/dashboard/search/SearchContainer';
@@ -65,7 +65,7 @@ export default () => {
 
     return (
         <div 
-            className={'w-full sticky top-0 z-50 shadow-md overflow-x-auto'}
+            className={'w-full sticky top-0 z-50 shadow-md'}
             style={{ 
                 background: 'rgba(15, 23, 42, 0.8)', 
                 backdropFilter: 'blur(16px)', 
@@ -91,6 +91,11 @@ export default () => {
                         <NavLink to={'/'} exact>
                             <FontAwesomeIcon icon={faLayerGroup} />
                         </NavLink>
+                    </Tooltip>
+                    <Tooltip placement={'bottom'} content={'Topup / Payment'}>
+                        <a href={'https://transaksikita.com'} target={'_blank'} rel={'noreferrer'}>
+                            <FontAwesomeIcon icon={faWallet} />
+                        </a>
                     </Tooltip>
                     {rootAdmin && (
                         <Tooltip placement={'bottom'} content={'Admin'}>
