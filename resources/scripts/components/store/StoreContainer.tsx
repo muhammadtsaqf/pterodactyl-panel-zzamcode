@@ -9,7 +9,7 @@ import { ApplicationStore } from '@/state';
 import Button from '@/components/elements/Button';
 import Spinner from '@/components/elements/Spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMicrochip, faMemory, faHdd, faDatabase, faBoxArchive, faNetworkWired, faShoppingCart, faServer } from '@fortawesome/free-solid-svg-icons';
+import { faMicrochip, faMemory, faHdd, faDatabase, faArchive, faNetworkWired, faShoppingCart, faServer } from '@fortawesome/free-solid-svg-icons';
 
 const Container = styled.div`
     ${tw`max-w-7xl mx-auto w-full`};
@@ -244,7 +244,7 @@ export default () => {
 
                         <GlassCard>
                             <h3 className="text-xl font-semibold mb-6 text-neutral-200 border-b border-neutral-700 pb-2">
-                                <FontAwesomeIcon icon={faBoxArchive} className="mr-2 text-orange-400" /> Additional Allocations
+                                <FontAwesomeIcon icon={faArchive} className="mr-2 text-orange-400" /> Additional Allocations
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <SliderGroup>
@@ -256,7 +256,7 @@ export default () => {
                                 </SliderGroup>
                                 <SliderGroup>
                                     <label>
-                                        <span><FontAwesomeIcon icon={faBoxArchive} className="mr-2 text-yellow-400"/> Backups</span>
+                                        <span><FontAwesomeIcon icon={faArchive} className="mr-2 text-yellow-400"/> Backups</span>
                                         <span className="text-indigo-400 font-bold">{backups}</span>
                                     </label>
                                     <input type="range" min="0" max="10" step="1" value={backups} onChange={(e) => setBackups(Number(e.target.value))} />
