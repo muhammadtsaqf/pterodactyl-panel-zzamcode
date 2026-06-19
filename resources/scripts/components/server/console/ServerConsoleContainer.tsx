@@ -10,7 +10,7 @@ import StatGraphs from '@/components/server/console/StatGraphs';
 import PowerButtons from '@/components/server/console/PowerButtons';
 import ServerDetailsBlock from '@/components/server/console/ServerDetailsBlock';
 import { Alert } from '@/components/elements/alert';
-import ServerBillingBlock from '@/components/server/console/ServerBillingBlock';
+import ServerActiveTimeBlock from '@/components/server/console/ServerActiveTimeBlock';
 
 export type PowerAction = 'start' | 'stop' | 'restart' | 'kill';
 
@@ -33,20 +33,22 @@ const ServerConsoleContainer = () => {
                         : 'This server is currently being transferred to another node and all actions are unavailable.'}
                 </Alert>
             )}
-            <div className={'grid grid-cols-4 gap-4 mb-4'}>
-                <div className={'hidden sm:block sm:col-span-2 lg:col-span-3 pr-4'}>
-                    <h1 className={'font-header font-medium text-2xl text-gray-50 leading-relaxed line-clamp-1'}>
-                        {name}
-                    </h1>
-                    <p className={'text-sm line-clamp-2'}>{description}</p>
+            <div className={'flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6 bg-neutral-900/50 p-6 rounded-2xl border border-neutral-800/50 shadow-lg backdrop-blur-sm'}>
+                <div className={'flex flex-col'}>
+                    <div className={'flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4'}>
+                        <h1 className={'font-header font-bold text-3xl text-gray-50 tracking-tight line-clamp-1'}>
+                            {name}
+                        </h1>
+                        <ServerActiveTimeBlock />
+                    </div>
+                    {description && <p className={'text-neutral-400 text-sm mt-2 max-w-2xl line-clamp-2'}>{description}</p>}
                 </div>
-                <div className={'col-span-4 sm:col-span-2 lg:col-span-1 self-end'}>
+                <div className={'w-full lg:w-auto flex justify-end mt-4 lg:mt-0'}>
                     <Can action={['control.start', 'control.stop', 'control.restart']} matchAny>
-                        <PowerButtons className={'flex sm:justify-end space-x-2'} />
+                        <PowerButtons className={'flex space-x-2'} />
                     </Can>
                 </div>
             </div>
-            <ServerBillingBlock />
             <div className={'grid grid-cols-4 gap-2 sm:gap-4 mb-4'}>
                 <div className={'flex col-span-4 lg:col-span-3'}>
                     <Spinner.Suspense>
