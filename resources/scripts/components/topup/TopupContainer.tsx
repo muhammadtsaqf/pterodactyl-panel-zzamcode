@@ -9,7 +9,7 @@ import Input from '@/components/elements/Input';
 import { faQrcode } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { useStoreActions, useStoreState } from 'easy-peasy';
+import { useStoreActions, useStoreState, Actions } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
 
 declare global {
@@ -26,7 +26,7 @@ export default () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { clearFlashes, addFlash } = useFlash();
     
-    const updateUserData = useStoreActions((actions: ApplicationStore) => actions.user.updateUserData);
+    const updateUserData = useStoreActions((actions: Actions<ApplicationStore>) => actions.user.updateUserData);
     const currentBalance = useStoreState((state: ApplicationStore) => state.user.data?.balance || 0);
 
     const submit = (e: React.FormEvent<HTMLFormElement>) => {
