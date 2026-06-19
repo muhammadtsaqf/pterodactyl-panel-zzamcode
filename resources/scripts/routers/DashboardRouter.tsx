@@ -13,38 +13,50 @@ export default () => {
     const location = useLocation();
 
     return (
-        <>
-            <NavigationBar />
-            {location.pathname.startsWith('/account') && (
-                <SubNavigation>
-                    <div>
-                        {routes.account
-                            .filter((route) => !!route.name)
-                            .map(({ path, name, exact = false }) => (
-                                <NavLink key={path} to={`/account/${path}`.replace('//', '/')} exact={exact}>
-                                    {name}
-                                </NavLink>
-                            ))}
-                    </div>
-                </SubNavigation>
-            )}
-            <TransitionRouter>
-                <React.Suspense fallback={<Spinner centered />}>
-                    <Switch location={location}>
-                        <Route path={'/'} exact>
-                            <DashboardContainer />
-                        </Route>
-                        {routes.account.map(({ path, component: Component }) => (
-                            <Route key={path} path={`/account/${path}`.replace('//', '/')} exact>
-                                <Component />
+        <div 
+            className={'min-h-screen relative w-full'}
+            style={{ 
+                background: 'linear-gradient(135deg, #0f172a 0%, #020617 100%)',
+                color: '#e2e8f0'
+            }}
+        >
+            {/* Abstract Background Elements */}
+            <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-600/10 blur-[120px] pointer-events-none" />
+            <div className="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-600/10 blur-[120px] pointer-events-none" />
+            
+            <div className="relative z-10">
+                <NavigationBar />
+                {location.pathname.startsWith('/account') && (
+                    <SubNavigation>
+                        <div>
+                            {routes.account
+                                .filter((route) => !!route.name)
+                                .map(({ path, name, exact = false }) => (
+                                    <NavLink key={path} to={`/account/${path}`.replace('//', '/')} exact={exact}>
+                                        {name}
+                                    </NavLink>
+                                ))}
+                        </div>
+                    </SubNavigation>
+                )}
+                <TransitionRouter>
+                    <React.Suspense fallback={<Spinner centered />}>
+                        <Switch location={location}>
+                            <Route path={'/'} exact>
+                                <DashboardContainer />
                             </Route>
-                        ))}
-                        <Route path={'*'}>
-                            <NotFound />
-                        </Route>
-                    </Switch>
-                </React.Suspense>
-            </TransitionRouter>
-        </>
+                            {routes.account.map(({ path, component: Component }) => (
+                                <Route key={path} path={`/account/${path}`.replace('//', '/')} exact>
+                                    <Component />
+                                </Route>
+                            ))}
+                            <Route path={'*'}>
+                                <NotFound />
+                            </Route>
+                        </Switch>
+                    </React.Suspense>
+                </TransitionRouter>
+            </div>
+        </div>
     );
 };

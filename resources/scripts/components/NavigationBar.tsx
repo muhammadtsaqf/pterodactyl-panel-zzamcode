@@ -17,17 +17,35 @@ const RightNavigation = styled.div`
     & > a,
     & > button,
     & > .navigation-link {
-        ${tw`flex items-center h-full no-underline text-neutral-300 px-6 cursor-pointer transition-all duration-150`};
+        ${tw`flex items-center h-full no-underline text-neutral-300 px-6 cursor-pointer transition-all duration-300 relative`};
 
-        &:active,
         &:hover {
-            ${tw`text-neutral-100 bg-black`};
+            ${tw`text-white`};
+            background: rgba(255, 255, 255, 0.03);
         }
 
         &:active,
-        &:hover,
         &.active {
-            box-shadow: inset 0 -2px ${theme`colors.cyan.600`.toString()};
+            ${tw`text-white`};
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #6366f1);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 -2px 10px rgba(59, 130, 246, 0.5);
+        }
+
+        &:hover::after,
+        &.active::after {
+            opacity: 1;
         }
     }
 `;
@@ -46,9 +64,17 @@ export default () => {
     };
 
     return (
-        <div className={'w-full bg-neutral-900 shadow-md overflow-x-auto'}>
+        <div 
+            className={'w-full sticky top-0 z-50 shadow-md overflow-x-auto'}
+            style={{ 
+                background: 'rgba(15, 23, 42, 0.8)', 
+                backdropFilter: 'blur(16px)', 
+                WebkitBackdropFilter: 'blur(16px)',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
+            }}
+        >
             <SpinnerOverlay visible={isLoggingOut} />
-            <div className={'mx-auto w-full flex items-center h-[3.5rem] max-w-[1200px]'}>
+            <div className={'mx-auto w-full flex items-center h-[4rem] max-w-[1200px]'}>
                 <div id={'logo'} className={'flex-1'}>
                     <Link
                         to={'/'}

@@ -72,15 +72,25 @@ export default () => {
                 <Pagination data={servers} onPageSelect={setPage}>
                     {({ items }) =>
                         items.length > 0 ? (
-                            items.map((server, index) => (
-                                <ServerRow key={server.uuid} server={server} css={index > 0 ? tw`mt-2` : undefined} />
-                            ))
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+                                {items.map((server) => (
+                                    <ServerRow key={server.uuid} server={server} />
+                                ))}
+                            </div>
                         ) : (
-                            <p css={tw`text-center text-sm text-neutral-400`}>
-                                {showOnlyAdmin
-                                    ? 'There are no other servers to display.'
-                                    : 'There are no servers associated with your account.'}
-                            </p>
+                            <div className="flex flex-col items-center justify-center py-20 text-center mt-10 rounded-2xl bg-neutral-900/50 border border-neutral-800/50 shadow-inner backdrop-blur-sm">
+                                <div className="w-32 h-32 mb-6 opacity-30 drop-shadow-lg">
+                                    <img src={'/assets/svgs/pterodactyl.svg'} alt="No servers" className="w-full h-full object-contain filter grayscale" />
+                                </div>
+                                <h3 className="text-2xl font-semibold text-neutral-200 mb-2 tracking-wide">
+                                    {showOnlyAdmin ? 'Tidak ada server lain' : 'Belum ada server'}
+                                </h3>
+                                <p className="text-neutral-400 max-w-md text-sm leading-relaxed">
+                                    {showOnlyAdmin
+                                        ? 'Saat ini tidak ada server lain yang dapat ditampilkan di sistem.'
+                                        : 'Sepertinya Anda belum memiliki server yang terhubung dengan akun ini. Hubungi administrator jika ini adalah sebuah kesalahan.'}
+                                </p>
+                            </div>
                         )
                     }
                 </Pagination>
