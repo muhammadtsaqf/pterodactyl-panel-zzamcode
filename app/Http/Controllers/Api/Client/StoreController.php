@@ -157,7 +157,8 @@ class StoreController extends ClientApiController
         $monthlyCost += $validated['backups'] * $priceBackup;
         $monthlyCost += $validated['ports'] * $pricePort;
 
-        $totalCost = $monthlyCost * $validated['duration'];
+        $originalTotalCost = $monthlyCost * $validated['duration'];
+        $totalCost = $originalTotalCost;
 
         $discountModel = null;
         if (!empty($validated['discount_code'])) {
@@ -206,9 +207,51 @@ class StoreController extends ClientApiController
             'startup' => $egg->startup,
             'start_on_completion' => true,
             'store_duration_months' => $validated['duration'], // passed to webhook
+            'store_renewal_cost' => $originalTotalCost, // Normal cost for future renewals
         ];
 
         $referenceId = 'STORE-' . $user->id . '-' . time() . '-' . Str::random(5);
+
+        if ($totalCost <= 0) {
+            // Free order due to discount
+            $paymentId = 'FREE-' . Str::random(10);
+            $order = StoreOrder::create([
+                'user_id' => $user->id,
+                'type' => 'purchase',
+                'data' => $data,
+                'amount' => 0,
+                'reference_id' => $referenceId,
+                'payment_id' => $paymentId,
+                'status' => 'paid',
+            ]);
+
+            if ($discountModel) {
+                $discountModel->increment('uses');
+            }
+
+            try {
+                $serverCreationService = app(\Pterodactyl\Services\Servers\ServerCreationService::class);
+                $server = $serverCreationService->handle($data);
+                
+                $server->store_renewal_cost = $originalTotalCost;
+                $server->store_renewal_duration = $validated['duration'];
+                $server->store_expires_at = now()->addMonths($validated['duration']);
+                $server->save();
+
+                $order->server_id = $server->id;
+                $order->save();
+            } catch (\Exception $e) {
+                \Log::error('Failed to provision free server: ' . $e->getMessage());
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'paymentId' => 'FREE',
+                    'referenceId' => $referenceId,
+                ]
+            ]);
+        }
 
         try {
             $paymentId = $this->generatePayment($user, $totalCost, $referenceId, 'Purchase Server (' . $validated['duration'] . ' Months)');
@@ -273,6 +316,43 @@ class StoreController extends ClientApiController
         }
 
         $referenceId = 'STORE-RENEW-' . $server->id . '-' . time() . '-' . Str::random(5);
+
+        if ($totalCost <= 0) {
+            $paymentId = 'FREE-' . Str::random(10);
+            StoreOrder::create([
+                'user_id' => $user->id,
+                'type' => 'renew',
+                'server_id' => $server->id,
+                'data' => ['duration' => $validated['duration']],
+                'amount' => 0,
+                'reference_id' => $referenceId,
+                'payment_id' => $paymentId,
+                'status' => 'paid',
+            ]);
+
+            if ($discountModel) {
+                $discountModel->increment('uses');
+            }
+
+            if ($server->store_expires_at && $server->store_expires_at->isFuture()) {
+                $server->store_expires_at = $server->store_expires_at->addMonths($validated['duration']);
+            } else {
+                $server->store_expires_at = now()->addMonths($validated['duration']);
+            }
+
+            if ($server->status === Server::STATUS_SUSPENDED) {
+                $server->status = null;
+            }
+            $server->save();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'paymentId' => 'FREE',
+                    'referenceId' => $referenceId,
+                ]
+            ]);
+        }
 
         try {
             $paymentId = $this->generatePayment($user, $totalCost, $referenceId, 'Renew Server ' . $server->uuidShort . ' (' . $validated['duration'] . ' Months)');

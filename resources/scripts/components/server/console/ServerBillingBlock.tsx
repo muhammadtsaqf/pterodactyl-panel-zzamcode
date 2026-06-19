@@ -54,6 +54,18 @@ export default () => {
             duration: storeRenewalDuration || 1,
             discount_code: appliedDiscount?.code
         }).then(({ data }) => {
+            if (data.data && data.data.paymentId === 'FREE') {
+                addFlash({
+                    key: 'server:billing',
+                    type: 'success',
+                    message: 'Renewal successful! Your server active period has been extended.',
+                });
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+                return;
+            }
+
             if (window.TransaksiKita && data.data && data.data.paymentId) {
                 window.TransaksiKita.pay(data.data.paymentId, {
                     onSuccess: function() {

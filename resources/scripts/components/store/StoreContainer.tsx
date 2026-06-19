@@ -254,6 +254,18 @@ export default () => {
         }
 
         http.post(endpoint, payload).then(({ data }) => {
+            if (data.data && data.data.paymentId === 'FREE') {
+                addFlash({
+                    key: 'store',
+                    type: 'success',
+                    message: 'Order successful! Your server is active and ready.',
+                });
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+                return;
+            }
+
             if (window.TransaksiKita && data.data && data.data.paymentId) {
                 window.TransaksiKita.pay(data.data.paymentId, {
                     onSuccess: function() {
@@ -498,9 +510,9 @@ export default () => {
                                 size="large" 
                                 className="w-full flex items-center justify-center py-4 text-lg bg-gradient-to-r from-indigo-600 to-purple-600 border-0 hover:from-indigo-500 hover:to-purple-500 shadow-lg"
                                 onClick={handleCheckout}
-                                disabled={submitting || finalTotalCost <= 0 || (activeTab === 'renew' && !selectedServerId) || (activeTab === 'new' && !serverName)}
+                                disabled={submitting || (activeTab === 'renew' && !selectedServerId) || (activeTab === 'new' && (!serverName || serverName.length < 3))}
                             >
-                                {submitting ? <Spinner size="small" /> : 'Checkout & Pay'}
+                                {submitting ? <Spinner size="small" /> : finalTotalCost === 0 ? 'Claim Free Server' : 'Checkout & Pay'}
                             </Button>
                         </GlassCard>
                     </div>
