@@ -31,19 +31,23 @@
 }
 
 .terminal {
-    @apply flex flex-col w-full;
+    @apply flex flex-col w-full rounded-2xl overflow-hidden shadow-2xl;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+
+    & .terminal_header {
+        @apply flex items-center justify-between px-4 py-3 border-b;
+        border-color: rgba(255, 255, 255, 0.05);
+        background: rgba(30, 41, 59, 0.5);
+    }
 
     & .overflows_container {
-        @apply -ml-4 sm:ml-0;
-        width: calc(100% + 2rem);
-
-        @screen sm {
-            @apply w-full;
-        }
+        @apply w-full;
     }
 
     & > .container {
-        @apply rounded-t p-1 sm:p-2 bg-black min-h-[16rem] flex-1 font-mono text-sm;
+        @apply p-2 sm:p-4 bg-transparent min-h-[20rem] flex-1 font-mono text-sm;
 
         & #terminal {
             @apply h-full;
@@ -53,20 +57,22 @@
             }
 
             &::-webkit-scrollbar-thumb {
-                @apply bg-gray-900;
+                @apply bg-gray-800 rounded-full;
             }
         }
     }
 
     & .command_icon {
-        @apply flex items-center top-0 left-0 absolute z-10 select-none h-full px-3 transition-colors duration-100;
+        @apply flex items-center top-0 left-0 absolute z-10 select-none h-full pl-4 pr-3 transition-colors duration-100;
+        color: #6366f1;
     }
 
     & .command_input {
-        @apply relative bg-gray-900 px-2 text-gray-100 pl-10 pr-4 py-2 w-full font-mono text-sm sm:rounded-b;
-        @apply focus:ring-0 outline-none focus-visible:outline-none;
-        @apply border-0 border-b-2 border-transparent transition-colors duration-100;
-        @apply active:border-cyan-500 focus:border-cyan-500;
+        @apply relative px-2 text-gray-100 pl-12 pr-4 py-4 w-full font-mono text-sm;
+        background: rgba(15, 23, 42, 0.6);
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        @apply outline-none focus-visible:outline-none transition-all duration-300;
+        @apply border-b-2 border-transparent focus:border-indigo-500;
     }
 }
 

@@ -201,8 +201,24 @@ export default () => {
     return (
         <div className={classNames(styles.terminal, 'relative')}>
             <SpinnerOverlay visible={!connected} size={'large'} />
+            
+            {/* Terminal Header */}
+            <div className={classNames(styles.terminal_header)}>
+                <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500 shadow-sm"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-500 shadow-sm"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500 shadow-sm"></div>
+                </div>
+                <div className="text-xs font-semibold text-gray-400 tracking-wider">
+                    SERVER CONSOLE
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="w-3 h-3"></div>
+                </div>
+            </div>
+
             <div
-                className={classNames(styles.container, styles.overflows_container, { 'rounded-b': !canSendCommands })}
+                className={classNames(styles.container, styles.overflows_container, { 'rounded-b-2xl': !canSendCommands })}
             >
                 <div className={'h-full'}>
                     <div id={styles.terminal} ref={ref} />
