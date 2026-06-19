@@ -14,7 +14,7 @@ export default () => {
 
     return (
         <div 
-            className={'min-h-screen relative w-full'}
+            className={'min-h-screen relative w-full flex flex-col'}
             style={{ 
                 background: 'linear-gradient(135deg, #0f172a 0%, #020617 100%)',
                 color: '#e2e8f0'
@@ -24,7 +24,7 @@ export default () => {
             <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-600/10 blur-[120px] pointer-events-none" />
             <div className="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-600/10 blur-[120px] pointer-events-none" />
             
-            <div className="relative z-10">
+            <div className="relative z-10 flex flex-col flex-1 w-full h-full">
                 <NavigationBar />
                 {location.pathname.startsWith('/account') && (
                     <SubNavigation>
