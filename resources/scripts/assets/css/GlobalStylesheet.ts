@@ -74,4 +74,9 @@ export default createGlobalStyle`
     ::-webkit-scrollbar-corner {
         background: transparent;
     }
+
+    /* Hide ugly reCAPTCHA badge */
+    .grecaptcha-badge {
+        visibility: hidden !important;
+    }
 `;
