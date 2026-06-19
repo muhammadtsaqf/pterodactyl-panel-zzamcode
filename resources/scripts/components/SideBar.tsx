@@ -3,7 +3,8 @@ import { Link, NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
     faLayerGroup, faSignOutAlt, faUser, faBars, faTimes, 
-    faStore, faSearch, faKey, faWrench, faListAlt, faCogs 
+    faStore, faSearch, faKey, faWrench, faListAlt, faCogs,
+    faExclamationTriangle
 } from '@fortawesome/free-solid-svg-icons';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
@@ -66,6 +67,7 @@ export default () => {
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [searchVisible, setSearchVisible] = useState(false);
+    const [logoutModalVisible, setLogoutModalVisible] = useState(false);
     const location = useLocation();
 
     // Close sidebar on route change (mobile)
@@ -103,6 +105,60 @@ export default () => {
         <>
             <SpinnerOverlay visible={isLoggingOut} />
             {searchVisible && <SearchModal appear visible={searchVisible} onDismissed={() => setSearchVisible(false)} />}
+            
+            {/* Custom Logout Modal */}
+            {logoutModalVisible && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div 
+                        style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }} 
+                        onClick={() => setLogoutModalVisible(false)}
+                    />
+                    <div style={{ 
+                        position: 'relative', 
+                        background: '#151923', 
+                        borderRadius: '16px', 
+                        padding: '32px', 
+                        width: '100%', 
+                        maxWidth: '450px',
+                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        textAlign: 'center'
+                    }}>
+                        <button 
+                            onClick={() => setLogoutModalVisible(false)}
+                            style={{ position: 'absolute', top: '16px', right: '16px', background: '#ef4444', color: 'white', width: '32px', height: '32px', borderRadius: '50%', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                            <FontAwesomeIcon icon={faTimes} />
+                        </button>
+                        
+                        <div style={{ textAlign: 'left', marginBottom: '24px' }}>
+                            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600, color: 'white' }}>Logout Confirmation</h3>
+                        </div>
+
+                        <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', marginBottom: '24px' }}>
+                            <FontAwesomeIcon icon={faExclamationTriangle} style={{ fontSize: '24px' }} />
+                        </div>
+                        
+                        <h4 style={{ margin: '0 0 12px 0', fontSize: '1.1rem', color: 'white', fontWeight: 500 }}>Yakin mau logout dari panel ini?</h4>
+                        <p style={{ margin: '0 0 32px 0', color: '#9ca3af', fontSize: '0.9rem' }}>Kamu perlu login ulang untuk akses server dan pengaturan akun.</p>
+                        
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                            <button 
+                                onClick={() => setLogoutModalVisible(false)}
+                                style={{ padding: '10px 24px', borderRadius: '8px', border: 'none', background: '#eab308', color: '#854d0e', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={onTriggerLogout}
+                                style={{ padding: '10px 24px', borderRadius: '8px', border: 'none', background: '#ef4444', color: 'white', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Mobile hamburger button */}
             <button
@@ -251,7 +307,7 @@ export default () => {
                 </div>
 
                 <div style={{ marginTop: 'auto', paddingBottom: '24px' }}>
-                    <LogoutButton onClick={onTriggerLogout}>
+                    <LogoutButton onClick={() => setLogoutModalVisible(true)}>
                         <FontAwesomeIcon icon={faSignOutAlt} />
                         <span>Sign Out</span>
                     </LogoutButton>
