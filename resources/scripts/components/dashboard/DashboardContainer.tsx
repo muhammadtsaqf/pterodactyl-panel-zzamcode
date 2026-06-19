@@ -78,7 +78,7 @@ export default () => {
                                 ))}
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-20 text-center mt-10 rounded-2xl bg-neutral-900/50 border border-neutral-800/50 shadow-inner backdrop-blur-sm">
+                            <div className="flex flex-col items-center justify-center py-20 text-center mt-10 rounded-2xl bg-neutral-900 bg-opacity-50 border border-neutral-800 border-opacity-50 shadow-inner backdrop-blur-sm">
                                 <div className="w-32 h-32 mb-6 opacity-30 drop-shadow-lg">
                                     <img src={'/assets/svgs/pterodactyl.svg'} alt="No servers" className="w-full h-full object-contain filter grayscale" />
                                 </div>

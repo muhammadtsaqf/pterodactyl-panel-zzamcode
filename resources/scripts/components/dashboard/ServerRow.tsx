@@ -28,10 +28,10 @@ const IconDescription = styled.p<{ $alarm: boolean }>`
 `;
 
 const ServerCard = styled(Link)<{ $status: ServerPowerState | undefined }>`
-    ${tw`flex flex-col relative rounded-2xl bg-neutral-900/40 border border-neutral-800/50 shadow-lg overflow-hidden transition-all duration-300 backdrop-blur-md p-6`};
+    ${tw`flex flex-col relative rounded-2xl bg-neutral-900 bg-opacity-50 border border-neutral-800 border-opacity-50 shadow-lg overflow-hidden transition-all duration-300 backdrop-blur-md p-6`};
 
     &:hover {
-        ${tw`bg-neutral-800/50 border-neutral-700/50`};
+        ${tw`bg-neutral-800 bg-opacity-50 border-neutral-700 border-opacity-50`};
         transform: translateY(-4px);
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
     }
@@ -40,10 +40,10 @@ const ServerCard = styled(Link)<{ $status: ServerPowerState | undefined }>`
         ${tw`absolute top-5 right-5 w-3 h-3 rounded-full shadow-md`};
         ${({ $status }) =>
             !$status || $status === 'offline'
-                ? tw`bg-red-500 shadow-red-500/50`
+                ? tw`bg-red-500`
                 : $status === 'running'
-                ? tw`bg-green-500 shadow-green-500/50`
-                : tw`bg-yellow-500 shadow-yellow-500/50`};
+                ? tw`bg-green-500`
+                : tw`bg-yellow-500`};
     }
 `;
 
@@ -91,7 +91,7 @@ export default ({ server, className }: { server: Server; className?: string }) =
             <div className={'status-indicator'} />
             
             <div css={tw`flex items-start mb-6`}>
-                <div css={tw`w-12 h-12 rounded-xl bg-blue-600/20 flex items-center justify-center mr-4 text-blue-400 shadow-inner`}>
+                <div css={tw`w-12 h-12 rounded-xl bg-blue-600 bg-opacity-25 flex items-center justify-center mr-4 text-blue-400 shadow-inner`}>
                     <FontAwesomeIcon icon={faServer} size="lg" />
                 </div>
                 <div css={tw`flex-1 min-w-0`}>
@@ -116,17 +116,17 @@ export default ({ server, className }: { server: Server; className?: string }) =
             <div css={tw`mt-auto`}>
                 {!stats || isSuspended || server.isNodeUnderMaintenance ? (
                     isSuspended ? (
-                        <div css={tw`flex items-center justify-center py-4 bg-red-500/10 rounded-xl border border-red-500/20`}>
+                        <div css={tw`flex items-center justify-center py-4 bg-red-500 bg-opacity-10 rounded-xl border border-red-500 border-opacity-25`}>
                             <span css={tw`text-red-400 text-sm font-medium`}>
                                 {server.status === 'suspended' ? 'Suspended' : 'Connection Error'}
                             </span>
                         </div>
                     ) : server.isNodeUnderMaintenance ? (
-                        <div css={tw`flex items-center justify-center py-4 bg-yellow-500/10 rounded-xl border border-yellow-500/20`}>
+                        <div css={tw`flex items-center justify-center py-4 bg-yellow-500 bg-opacity-10 rounded-xl border border-yellow-500 border-opacity-25`}>
                             <span css={tw`text-yellow-400 text-sm font-medium`}>Under Maintenance</span>
                         </div>
                     ) : server.isTransferring || server.status ? (
-                        <div css={tw`flex items-center justify-center py-4 bg-neutral-500/10 rounded-xl border border-neutral-500/20`}>
+                        <div css={tw`flex items-center justify-center py-4 bg-neutral-500 bg-opacity-10 rounded-xl border border-neutral-500 border-opacity-25`}>
                             <span css={tw`text-neutral-400 text-sm font-medium`}>
                                 {server.isTransferring
                                     ? 'Transferring'
@@ -143,7 +143,7 @@ export default ({ server, className }: { server: Server; className?: string }) =
                         </div>
                     )
                 ) : (
-                    <div css={tw`grid grid-cols-3 gap-4 pt-4 border-t border-neutral-800/50`}>
+                    <div css={tw`grid grid-cols-3 gap-4 pt-4 border-t border-neutral-800 border-opacity-50`}>
                         <div css={tw`flex flex-col items-center justify-center`}>
                             <div css={tw`flex items-center mb-1`}>
                                 <Icon icon={faMicrochip} $alarm={alarms.cpu} />
@@ -153,7 +153,7 @@ export default ({ server, className }: { server: Server; className?: string }) =
                             </div>
                             <span css={tw`text-[10px] text-neutral-500 uppercase tracking-wider`}>CPU</span>
                         </div>
-                        <div css={tw`flex flex-col items-center justify-center border-l border-r border-neutral-800/50`}>
+                        <div css={tw`flex flex-col items-center justify-center border-l border-r border-neutral-800 border-opacity-50`}>
                             <div css={tw`flex items-center mb-1`}>
                                 <Icon icon={faMemory} $alarm={alarms.memory} />
                                 <IconDescription $alarm={alarms.memory}>
