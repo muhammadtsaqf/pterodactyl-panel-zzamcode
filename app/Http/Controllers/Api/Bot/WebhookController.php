@@ -31,10 +31,26 @@ class WebhookController extends Controller
             return response()->json(['reply' => 'Invalid payload.'], 400);
         }
 
-        $user = User::where('phone', $phone)->first();
+        // Clean incoming phone (remove +, -, spaces, etc)
+        $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
+        
+        // Generate alternate prefix (62 <-> 0)
+        $alternatePhone = null;
+        if (str_starts_with($cleanPhone, '62')) {
+            $alternatePhone = '0' . substr($cleanPhone, 2);
+        } elseif (str_starts_with($cleanPhone, '0')) {
+            $alternatePhone = '62' . substr($cleanPhone, 1);
+        }
+
+        // Fetch users that might match
+        $users = User::whereNotNull('phone')->get();
+        $user = $users->first(function($u) use ($cleanPhone, $alternatePhone) {
+            $dbPhone = preg_replace('/[^0-9]/', '', $u->phone);
+            return $dbPhone === $cleanPhone || ($alternatePhone && $dbPhone === $alternatePhone);
+        });
 
         if (!$user) {
-            return response()->json(['reply' => "❌ Nomor WhatsApp Anda ({$phone}) belum terdaftar di panel.\n\nSilakan login ke panel dan isi nomor Anda (awali dengan 62 tanpa +) di halaman Account Overview pada kolom Profile Details."]);
+            return response()->json(['reply' => "❌ Nomor WhatsApp Anda ({$cleanPhone}) belum terdaftar di panel.\n\nSilakan login ke panel dan update kolom Phone Number di Account Overview menjadi nomor Anda ini."]);
         }
 
         $parts = explode(' ', $message);
