@@ -62,9 +62,9 @@ const LogoutButton = styled.button`
 `;
 
 export default () => {
-    const name = useStoreState((state: ApplicationStore) => state.settings.data!.name);
-    const logo = useStoreState((state: ApplicationStore) => state.settings.data!.logo);
-    const rootAdmin = useStoreState((state: ApplicationStore) => state.user.data!.rootAdmin);
+    const name = useStoreState((state: ApplicationStore) => state.settings.data?.name || 'Pterodactyl');
+    const logo = useStoreState((state: ApplicationStore) => state.settings.data?.logo);
+    const rootAdmin = useStoreState((state: ApplicationStore) => state.user.data?.rootAdmin);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [searchVisible, setSearchVisible] = useState(false);
