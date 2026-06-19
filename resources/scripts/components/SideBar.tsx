@@ -172,25 +172,25 @@ export default () => {
                 <div style={{ display: 'flex', flexDirection: 'column' as const, flex: 1, paddingTop: '24px', paddingBottom: '24px', gap: '8px', overflowY: 'auto' as const }}>
                     <NavItem>
                         <NavLink to={'/'} exact>
-                            <FontAwesomeIcon icon={faLayerGroup} />
+                            <FontAwesomeIcon icon={faLayerGroup} className="mr-3 text-lg w-5 text-center" />
                             <span className="font-medium text-sm tracking-wide">Dashboard</span>
                         </NavLink>
                     </NavItem>
                     <NavItem>
                         <NavLink to={'/store'} exact>
-                            <FontAwesomeIcon icon={faShoppingCart} />
+                            <FontAwesomeIcon icon={faShoppingCart} className="mr-3 text-lg w-5 text-center" />
                             <span className="font-medium text-sm tracking-wide">Store</span>
                         </NavLink>
                     </NavItem>
                     <NavItem>
                         <NavLink to={'/topup'} exact>
-                            <FontAwesomeIcon icon={faWallet} />
+                            <FontAwesomeIcon icon={faWallet} className="mr-3 text-lg w-5 text-center" />
                             <span className="font-medium text-sm tracking-wide">Top-up Balance</span>
                         </NavLink>
                     </NavItem>
                     <NavItem>
                         <NavLink to={'/account'}>
-                            <FontAwesomeIcon icon={faUser} />
+                            <FontAwesomeIcon icon={faUser} className="mr-3 text-lg w-5 text-center" />
                             <span className="font-medium text-sm tracking-wide">Account Settings</span>
                         </NavLink>
                     </NavItem>
@@ -199,7 +199,7 @@ export default () => {
                         <div className="mt-4 pt-4 border-t border-neutral-700/50">
                             <NavItem>
                                 <a href={'/admin'} rel={'noreferrer'}>
-                                    <FontAwesomeIcon icon={faCogs} />
+                                    <FontAwesomeIcon icon={faCogs} className="mr-3 text-lg w-5 text-center" />
                                     <span className="font-medium text-sm tracking-wide">Admin Panel</span>
                                 </a>
                             </NavItem>
@@ -207,9 +207,9 @@ export default () => {
                     )}
                 </div>
 
-                <div style={{ marginTop: 'auto' }}>
+                <div style={{ marginTop: 'auto', paddingBottom: '24px' }}>
                     <LogoutButton onClick={onTriggerLogout}>
-                        <FontAwesomeIcon icon={faSignOutAlt} />
+                        <FontAwesomeIcon icon={faSignOutAlt} className="mr-3 text-lg w-5 text-center" />
                         <span className="font-medium text-sm tracking-wide">Sign Out</span>
                     </LogoutButton>
                 </div>
