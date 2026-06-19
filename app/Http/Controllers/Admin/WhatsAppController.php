@@ -51,4 +51,14 @@ class WhatsAppController extends Controller
             return response()->json(['success' => false, 'message' => 'Cannot connect to bot service.']);
         }
     }
+
+    public function clear(): JsonResponse
+    {
+        try {
+            $response = Http::post("{$this->botUrl}/api/clear");
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Cannot connect to bot service.']);
+        }
+    }
 }

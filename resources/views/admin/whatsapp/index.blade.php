@@ -35,7 +35,8 @@
             </div>
             <div class="box-footer">
                 <button type="button" class="btn btn-sm btn-primary" id="btn-start">Start Bot & Dapatkan Pairing Code</button>
-                <button type="button" class="btn btn-sm btn-danger" id="btn-stop">Stop Bot</button>
+                <button type="button" class="btn btn-sm btn-warning" id="btn-stop">Stop Bot</button>
+                <button type="button" class="btn btn-sm btn-danger pull-right" id="btn-clear">Hapus Session</button>
             </div>
         </div>
     </div>
@@ -166,6 +167,35 @@ $(document).ready(function() {
             error: function() {
                 showAlert('danger', 'Gagal menghubungi server.');
                 btn.prop('disabled', false).text('Stop Bot');
+            }
+        });
+    });
+
+    $('#btn-clear').click(function() {
+        if(!confirm('Apakah Anda yakin ingin menghapus data sesi secara paksa? Ini akan menghapus file auth di server.')) return;
+        
+        var btn = $(this);
+        btn.prop('disabled', true).text('Menghapus...');
+        
+        $.ajax({
+            url: '{{ route("admin.whatsapp.clear") }}',
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                if(response.success) {
+                    showAlert('success', response.message || 'Sesi berhasil dihapus secara paksa.');
+                    $('#pairing-container').hide();
+                } else {
+                    showAlert('warning', response.message);
+                }
+                btn.prop('disabled', false).text('Hapus Session');
+                checkStatus();
+            },
+            error: function() {
+                showAlert('danger', 'Gagal menghubungi server.');
+                btn.prop('disabled', false).text('Hapus Session');
             }
         });
     });

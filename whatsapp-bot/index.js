@@ -34,7 +34,7 @@ async function startBot(targetNumber) {
         auth: state,
         printQRInTerminal: false,
         logger: pino({ level: 'silent' }),
-        browser: Browsers.ubuntu('Chrome')
+        browser: ['Mac OS', 'Safari', '10.15.7']
     });
 
     sock.ev.on('creds.update', saveCreds);
@@ -140,6 +140,22 @@ app.post('/api/stop', async (req, res) => {
     }
     
     return res.json({ success: true, status: 'offline', message });
+});
+
+app.post('/api/clear', async (req, res) => {
+    if (sock) {
+        try {
+            sock.logout();
+        } catch (e) {}
+        sock = null;
+    }
+    currentStatus = 'offline';
+    
+    if (fs.existsSync('auth_info_baileys')) {
+        fs.rmSync('auth_info_baileys', { recursive: true, force: true });
+    }
+    
+    return res.json({ success: true, status: 'offline', message: 'Sesi berhasil dihapus secara paksa.' });
 });
 
 app.get('/api/status', (req, res) => {
