@@ -73,23 +73,29 @@ const RegisterContainer = ({ history }: RouteComponentProps) => {
         >
             {({ isSubmitting, setSubmitting, submitForm }) => (
                 <LoginFormContainer title={'Create an Account'} css={tw`w-full flex`}>
-                    <Field light type={'email'} label={'Email'} name={'email'} disabled={isSubmitting} />
+                    <Field type={'email'} label={'Email'} name={'email'} disabled={isSubmitting} />
                     <div css={tw`mt-6`}>
-                        <Field light type={'text'} label={'Username'} name={'username'} disabled={isSubmitting} />
+                        <Field type={'text'} label={'Username'} name={'username'} disabled={isSubmitting} />
                     </div>
                     <div css={tw`mt-6 flex gap-4`}>
                         <div css={tw`w-1/2`}>
-                            <Field light type={'text'} label={'First Name'} name={'name_first'} disabled={isSubmitting} />
+                            <Field type={'text'} label={'First Name'} name={'name_first'} disabled={isSubmitting} />
                         </div>
                         <div css={tw`w-1/2`}>
-                            <Field light type={'text'} label={'Last Name'} name={'name_last'} disabled={isSubmitting} />
+                            <Field type={'text'} label={'Last Name'} name={'name_last'} disabled={isSubmitting} />
                         </div>
                     </div>
                     <div css={tw`mt-6`}>
-                        <Field light type={'password'} label={'Password'} name={'password'} disabled={isSubmitting} />
+                        <Field type={'password'} label={'Password'} name={'password'} disabled={isSubmitting} />
                     </div>
                     <div css={tw`mt-6`}>
-                        <Button type={'submit'} size={'xlarge'} isLoading={isSubmitting} disabled={isSubmitting}>
+                        <Button 
+                            type={'submit'} 
+                            size={'xlarge'} 
+                            isLoading={isSubmitting} 
+                            disabled={isSubmitting}
+                            css={tw`w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 border-none shadow-lg text-white font-bold tracking-wide rounded-lg transition-all duration-300`}
+                        >
                             Register
                         </Button>
                     </div>
@@ -111,9 +117,9 @@ const RegisterContainer = ({ history }: RouteComponentProps) => {
                     <div css={tw`mt-6 text-center`}>
                         <Link
                             to={'/auth/login'}
-                            css={tw`text-xs text-neutral-500 tracking-wide no-underline uppercase hover:text-neutral-600`}
+                            css={tw`text-xs text-neutral-400 tracking-wide no-underline hover:text-blue-400 transition-colors duration-200 font-medium`}
                         >
-                            Already have an account? Login here
+                            Sudah punya akun? Login di sini
                         </Link>
                     </div>
                 </LoginFormContainer>

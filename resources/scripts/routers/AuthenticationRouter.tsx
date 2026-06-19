@@ -14,9 +14,20 @@ export default () => {
     const { path } = useRouteMatch();
 
     return (
-        <div className={'pt-8 xl:pt-32'}>
-            <Switch location={location}>
-                <Route path={`${path}/login`} component={LoginContainer} exact />
+        <div 
+            className={'min-h-screen w-full flex items-center justify-center relative'}
+            style={{ 
+                background: 'linear-gradient(135deg, #0f172a 0%, #020617 100%)',
+                overflow: 'hidden'
+            }}
+        >
+            {/* Abstract Background Elements */}
+            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-600/20 blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-600/20 blur-[120px] pointer-events-none" />
+            
+            <div className="z-10 w-full px-4 sm:px-0">
+                <Switch location={location}>
+                    <Route path={`${path}/login`} component={LoginContainer} exact />
                 <Route path={`${path}/register`} component={RegisterContainer} exact />
                 <Route path={`${path}/login/checkpoint`} component={LoginCheckpointContainer} />
                 <Route path={`${path}/password`} component={ForgotPasswordContainer} exact />

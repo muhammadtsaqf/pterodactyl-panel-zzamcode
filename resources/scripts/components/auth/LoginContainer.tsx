@@ -75,12 +75,18 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
         >
             {({ isSubmitting, setSubmitting, submitForm }) => (
                 <LoginFormContainer title={'Login to Continue'} css={tw`w-full flex`}>
-                    <Field light type={'text'} label={'Username or Email'} name={'username'} disabled={isSubmitting} />
+                    <Field type={'text'} label={'Username or Email'} name={'username'} disabled={isSubmitting} />
                     <div css={tw`mt-6`}>
-                        <Field light type={'password'} label={'Password'} name={'password'} disabled={isSubmitting} />
+                        <Field type={'password'} label={'Password'} name={'password'} disabled={isSubmitting} />
                     </div>
                     <div css={tw`mt-6`}>
-                        <Button type={'submit'} size={'xlarge'} isLoading={isSubmitting} disabled={isSubmitting}>
+                        <Button 
+                            type={'submit'} 
+                            size={'xlarge'} 
+                            isLoading={isSubmitting} 
+                            disabled={isSubmitting}
+                            css={tw`w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 border-none shadow-lg text-white font-bold tracking-wide rounded-lg transition-all duration-300`}
+                        >
                             Login
                         </Button>
                     </div>
@@ -102,15 +108,15 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
                     <div css={tw`mt-6 text-center`}>
                         <Link
                             to={'/auth/password'}
-                            css={tw`text-xs text-neutral-500 tracking-wide no-underline uppercase hover:text-neutral-600`}
+                            css={tw`text-xs text-neutral-400 tracking-wide no-underline hover:text-neutral-200 transition-colors duration-200`}
                         >
-                            Forgot password?
+                            Lupa Password?
                         </Link>
                     </div>
-                    <div css={tw`mt-6 text-center`}>
+                    <div css={tw`mt-4 text-center`}>
                         <Link
                             to={'/auth/register'}
-                            css={tw`text-xs text-neutral-500 tracking-wide no-underline uppercase hover:text-neutral-600`}
+                            css={tw`text-xs text-neutral-400 tracking-wide no-underline hover:text-blue-400 transition-colors duration-200 font-medium`}
                         >
                             Belum punya akun? Daftar di sini
                         </Link>
