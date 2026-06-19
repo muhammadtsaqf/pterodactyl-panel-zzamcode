@@ -15,9 +15,8 @@ import { faUser, faLock, faEye, faEyeSlash, faArrowRight, faEnvelope, faIdCard }
 interface Values {
     email: string;
     username: string;
-    name_first: string;
-    name_last: string;
     password: string;
+    password_confirmation: string;
 }
 
 const CustomField = ({ icon, label, ...props }: any) => {
@@ -104,7 +103,15 @@ const RegisterContainer = ({ history }: RouteComponentProps) => {
             return;
         }
 
-        register({ ...values, recaptchaData: token })
+        register({ 
+            email: values.email, 
+            username: values.username, 
+            name_first: values.username, 
+            name_last: values.username, 
+            password: values.password,
+            password_confirmation: values.password_confirmation,
+            recaptchaData: token 
+        })
             .then((response) => {
                 if (response.complete) {
                     // @ts-expect-error this is valid
@@ -124,13 +131,14 @@ const RegisterContainer = ({ history }: RouteComponentProps) => {
     return (
         <Formik
             onSubmit={onSubmit}
-            initialValues={{ email: '', username: '', name_first: '', name_last: '', password: '' }}
+            initialValues={{ email: '', username: '', password: '', password_confirmation: '' }}
             validationSchema={object().shape({
                 email: string().email('A valid email must be provided.').required('A valid email must be provided.'),
                 username: string().required('A username must be provided.'),
-                name_first: string().required('A first name must be provided.'),
-                name_last: string().required('A last name must be provided.'),
                 password: string().required('Please enter your account password.').min(8, 'Password must be at least 8 characters.'),
+                password_confirmation: string().required('Please confirm your password.').test('passwords-match', 'Passwords must match', function(value){
+                    return this.parent.password === value
+                }),
             })}
         >
             {({ isSubmitting, setSubmitting, submitForm }) => (
@@ -151,32 +159,19 @@ const RegisterContainer = ({ history }: RouteComponentProps) => {
                         disabled={isSubmitting} 
                     />
 
-                    <div css={tw`flex gap-4`}>
-                        <div css={tw`w-1/2`}>
-                            <CustomField 
-                                icon={faIdCard} 
-                                label={'First Name'} 
-                                name={'name_first'} 
-                                placeholder={'First Name'}
-                                disabled={isSubmitting} 
-                            />
-                        </div>
-                        <div css={tw`w-1/2`}>
-                            <CustomField 
-                                icon={faIdCard} 
-                                label={'Last Name'} 
-                                name={'name_last'} 
-                                placeholder={'Last Name'}
-                                disabled={isSubmitting} 
-                            />
-                        </div>
-                    </div>
-
                     <CustomPasswordField 
                         icon={faLock} 
                         label={'Password'} 
                         name={'password'} 
                         placeholder={'Create a secure password'}
+                        disabled={isSubmitting} 
+                    />
+
+                    <CustomPasswordField 
+                        icon={faLock} 
+                        label={'Confirm Password'} 
+                        name={'password_confirmation'} 
+                        placeholder={'Repeat your password'}
                         disabled={isSubmitting} 
                     />
 
