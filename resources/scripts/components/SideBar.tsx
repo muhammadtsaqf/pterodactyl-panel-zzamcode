@@ -1,27 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCogs, faLayerGroup, faSignOutAlt, faCreditCard, faUser, faWallet } from '@fortawesome/free-solid-svg-icons';
+import { faCogs, faLayerGroup, faSignOutAlt, faCreditCard, faUser, faWallet, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
 import tw, { styled } from 'twin.macro';
 import http from '@/api/http';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
-
-const SidebarContainer = styled.div`
-    ${tw`flex flex-col w-64 h-screen fixed top-0 left-0 z-50 shadow-2xl`};
-    background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-`;
-
-const SidebarHeader = styled.div`
-    ${tw`flex items-center justify-center h-16 w-full`};
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-`;
-
-const NavList = styled.div`
-    ${tw`flex flex-col flex-1 py-6 space-y-2 overflow-y-auto`};
-`;
+import { useLocation } from 'react-router';
 
 const NavItem = styled.div`
     & > a, & > button {
@@ -72,6 +58,23 @@ export default () => {
     const name = useStoreState((state: ApplicationStore) => state.settings.data!.name);
     const rootAdmin = useStoreState((state: ApplicationStore) => state.user.data!.rootAdmin);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
+    const location = useLocation();
+
+    // Close sidebar on route change (mobile)
+    useEffect(() => {
+        setMobileOpen(false);
+    }, [location.pathname]);
+
+    // Prevent body scroll when mobile sidebar is open
+    useEffect(() => {
+        if (mobileOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => { document.body.style.overflow = ''; };
+    }, [mobileOpen]);
 
     const onTriggerLogout = () => {
         setIsLoggingOut(true);
@@ -84,8 +87,77 @@ export default () => {
     return (
         <>
             <SpinnerOverlay visible={isLoggingOut} />
-            <SidebarContainer>
-                <SidebarHeader>
+
+            {/* Mobile hamburger button */}
+            <button
+                onClick={() => setMobileOpen(!mobileOpen)}
+                className="sidebar-mobile-toggle"
+                style={{
+                    position: 'fixed',
+                    top: '14px',
+                    left: '14px',
+                    zIndex: 60,
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(15, 23, 42, 0.9)',
+                    backdropFilter: 'blur(12px)',
+                    color: '#e2e8f0',
+                    fontSize: '16px',
+                    cursor: 'pointer',
+                    display: 'none', // hidden by default on desktop
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
+                }}
+            >
+                <FontAwesomeIcon icon={mobileOpen ? faTimes : faBars} />
+            </button>
+
+            {/* Overlay backdrop for mobile */}
+            {mobileOpen && (
+                <div
+                    onClick={() => setMobileOpen(false)}
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 49,
+                        background: 'rgba(0,0,0,0.6)',
+                        backdropFilter: 'blur(4px)',
+                    }}
+                    className="sidebar-overlay"
+                />
+            )}
+
+            {/* Sidebar */}
+            <div
+                className={`sidebar-container ${mobileOpen ? 'sidebar-open' : ''}`}
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column' as const,
+                    width: '256px',
+                    height: '100vh',
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    zIndex: 50,
+                    boxShadow: '4px 0 24px rgba(0,0,0,0.3)',
+                    background: 'linear-gradient(180deg, #0f172a 0%, #020617 100%)',
+                    borderRight: '1px solid rgba(255, 255, 255, 0.05)',
+                    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                }}
+            >
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '64px',
+                        width: '100%',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                    }}
+                >
                     <Link
                         to={'/'}
                         className={
@@ -95,9 +167,9 @@ export default () => {
                         <span className="text-indigo-500 mr-2">/</span>
                         {name}
                     </Link>
-                </SidebarHeader>
+                </div>
                 
-                <NavList>
+                <div style={{ display: 'flex', flexDirection: 'column' as const, flex: 1, paddingTop: '24px', paddingBottom: '24px', gap: '8px', overflowY: 'auto' as const }}>
                     <NavItem>
                         <NavLink to={'/'} exact>
                             <FontAwesomeIcon icon={faLayerGroup} />
@@ -127,15 +199,36 @@ export default () => {
                             </NavItem>
                         </div>
                     )}
-                </NavList>
+                </div>
 
-                <div className="mt-auto">
+                <div style={{ marginTop: 'auto' }}>
                     <LogoutButton onClick={onTriggerLogout}>
                         <FontAwesomeIcon icon={faSignOutAlt} />
                         <span className="font-medium text-sm tracking-wide">Sign Out</span>
                     </LogoutButton>
                 </div>
-            </SidebarContainer>
+            </div>
+
+            {/* Global responsive styles */}
+            <style>{`
+                @media (max-width: 768px) {
+                    .sidebar-mobile-toggle {
+                        display: flex !important;
+                    }
+                    .sidebar-container {
+                        transform: translateX(-100%);
+                    }
+                    .sidebar-container.sidebar-open {
+                        transform: translateX(0);
+                    }
+                    .main-content-area {
+                        margin-left: 0 !important;
+                    }
+                    .navbar-inner {
+                        padding-left: 60px !important;
+                    }
+                }
+            `}</style>
         </>
     );
 };

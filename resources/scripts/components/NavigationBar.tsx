@@ -63,7 +63,7 @@ export default () => {
                 borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
             }}
         >
-            <div className={'mx-auto w-full flex items-center h-[4rem] px-8'}>
+            <div className={'navbar-inner mx-auto w-full flex items-center h-[4rem] px-8'}>
                 <div className={'flex-1'}>
                     {/* Empty space where logo used to be */}
                 </div>

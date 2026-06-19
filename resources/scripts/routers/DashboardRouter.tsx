@@ -28,7 +28,7 @@ export default () => {
             
             <SideBar />
             
-            <div className="relative z-10 flex flex-col flex-1 w-full h-full ml-64 overflow-x-hidden">
+            <div className="main-content-area relative z-10 flex flex-col flex-1 w-full h-full ml-64 overflow-x-hidden">
                 <NavigationBar />
                 {location.pathname.startsWith('/account') && (
                     <SubNavigation>
