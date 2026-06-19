@@ -8,7 +8,6 @@ export interface UserData {
     language: string;
     rootAdmin: boolean;
     useTotp: boolean;
-    balance: number;
     createdAt: Date;
     updatedAt: Date;
     firstName?: string;

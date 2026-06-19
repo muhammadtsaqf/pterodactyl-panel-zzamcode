@@ -4,9 +4,7 @@ namespace Pterodactyl\Http\Controllers\Api\Webhooks;
 
 use Illuminate\Http\Request;
 use Pterodactyl\Http\Controllers\Controller;
-use Pterodactyl\Models\Transaction;
 use Pterodactyl\Models\StoreOrder;
-use Pterodactyl\Models\User;
 use Pterodactyl\Contracts\Repository\SettingsRepositoryInterface;
 use Pterodactyl\Services\Servers\ServerCreationService;
 
@@ -50,20 +48,6 @@ class TransaksikitaController extends Controller
         if ($data['status'] === 'success') {
             if (str_starts_with($data['referenceId'], 'STORE-')) {
                 return $this->handleStoreOrder($data);
-            }
-
-            // Legacy fallback for topup
-            $transaction = Transaction::where('reference_id', $data['referenceId'])->first();
-
-            if ($transaction && $transaction->status === 'pending') {
-                $transaction->status = 'success';
-                $transaction->save();
-
-                $user = User::find($transaction->user_id);
-                if ($user) {
-                    $user->balance += $transaction->amount;
-                    $user->save();
-                }
             }
         }
 

@@ -57,13 +57,6 @@
                             <p class="text-muted"><small>The default language to use when rendering the Panel for this user.</small></p>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="balance" class="control-label">Balance (Rp)</label>
-                        <div>
-                            <input type="number" name="balance" value="{{ $user->balance }}" class="form-control" min="0">
-                            <p class="text-muted"><small>The user's current account balance.</small></p>
-                        </div>
-                    </div>
                 </div>
                 <div class="box-footer">
                     {!! csrf_field() !!}

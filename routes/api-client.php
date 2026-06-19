@@ -46,7 +46,6 @@ Route::prefix('/account')->middleware(AccountSubject::class)->group(function () 
         Route::post('/remove', [Client\SSHKeyController::class, 'delete']);
     });
 
-    Route::post('/topup', [Client\TopupController::class, 'createPayment']);
 });
 
 Route::prefix('/store')->group(function () {

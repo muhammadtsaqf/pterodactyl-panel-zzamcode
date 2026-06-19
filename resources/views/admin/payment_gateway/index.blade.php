@@ -62,7 +62,7 @@
             <div class="box-body">
                 <p>To enable automated top-ups, make sure your Webhook URL in Transaksikita is set to:</p>
                 <code style="word-break: break-all;">{{ config('app.url') }}/api/webhooks/transaksikita</code>
-                <p class="mt-4 text-muted small">When a user successfully pays via QRIS, the system will automatically receive the callback and add balance to the user's account.</p>
+                <p class="mt-4 text-muted small">When a user successfully pays via QRIS, the system will automatically receive the callback and activate the server.</p>
             </div>
         </div>
     </div>
