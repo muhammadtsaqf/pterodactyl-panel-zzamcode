@@ -1,0 +1,42 @@
+import http from '@/api/http';
+
+export interface RegisterResponse {
+    complete: boolean;
+    intended?: string;
+}
+
+export interface RegisterData {
+    email: string;
+    username: string;
+    name_first: string;
+    name_last: string;
+    password: string;
+    recaptchaData?: string | null;
+}
+
+export default ({ email, username, name_first, name_last, password, recaptchaData }: RegisterData): Promise<RegisterResponse> => {
+    return new Promise((resolve, reject) => {
+        http.get('/sanctum/csrf-cookie')
+            .then(() =>
+                http.post('/auth/register', {
+                    email,
+                    username,
+                    name_first,
+                    name_last,
+                    password,
+                    'g-recaptcha-response': recaptchaData,
+                })
+            )
+            .then((response) => {
+                if (!(response.data instanceof Object)) {
+                    return reject(new Error('An error occurred while processing the register request.'));
+                }
+
+                return resolve({
+                    complete: response.data.data.complete,
+                    intended: response.data.data.intended || undefined,
+                });
+            })
+            .catch(reject);
+    });
+};
