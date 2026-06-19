@@ -55,6 +55,9 @@ async function startBot(targetNumber) {
             }
         } else if (connection === 'open') {
             currentStatus = 'online';
+            try {
+                await sock.sendPresenceUpdate('available');
+            } catch (e) {}
         }
     });
 
@@ -62,6 +65,12 @@ async function startBot(targetNumber) {
         if (m.type !== 'notify') return;
         const msg = m.messages[0];
         if (!msg.message || msg.key.fromMe) return;
+
+        // Auto read
+        try {
+            await sock.readMessages([msg.key]);
+            await sock.sendPresenceUpdate('available', msg.key.remoteJid);
+        } catch (e) {}
 
         const sender = msg.key.remoteJid.split('@')[0];
         const text = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
