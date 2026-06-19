@@ -34,6 +34,73 @@
             <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
             <![endif]-->
         @show
+        <style>
+            /* Modern AdminLTE Overrides */
+            body.skin-blue .main-header .navbar {
+                background: linear-gradient(135deg, #0f172a, #1e293b) !important;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                border: none;
+            }
+            body.skin-blue .main-header .logo {
+                background: #0f172a !important;
+                color: #f8fafc !important;
+                border-bottom: 0 solid transparent !important;
+                font-weight: 600;
+                letter-spacing: 0.5px;
+                box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            }
+            body.skin-blue .main-header .logo:hover {
+                background: #1e293b !important;
+            }
+            body.skin-blue .main-sidebar {
+                background-color: #0f172a !important;
+                box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+            }
+            body.skin-blue .sidebar-menu > li.header {
+                color: #64748b !important;
+                background: #0f172a !important;
+                font-weight: 700;
+                letter-spacing: 1px;
+                padding: 15px 25px 10px 15px;
+            }
+            body.skin-blue .sidebar-menu > li > a {
+                padding: 12px 15px;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                border-left: 3px solid transparent;
+            }
+            body.skin-blue .sidebar-menu > li:hover > a,
+            body.skin-blue .sidebar-menu > li.active > a {
+                background: rgba(255, 255, 255, 0.05) !important;
+                color: #fff !important;
+                border-left-color: #6366f1 !important;
+            }
+            body.skin-blue .sidebar-menu > li > a > i {
+                margin-right: 10px;
+                color: #6366f1 !important;
+            }
+            body.skin-blue .sidebar-menu > li:hover > a > i,
+            body.skin-blue .sidebar-menu > li.active > a > i {
+                color: #818cf8 !important;
+                text-shadow: 0 0 10px rgba(129, 140, 248, 0.5);
+            }
+            body.skin-blue .main-header .navbar .sidebar-toggle {
+                color: #cbd5e1 !important;
+                transition: background 0.3s ease;
+            }
+            body.skin-blue .main-header .navbar .sidebar-toggle:hover {
+                background: rgba(255, 255, 255, 0.1) !important;
+                color: #fff !important;
+            }
+            body.skin-blue .main-header .navbar .nav > li > a {
+                color: #cbd5e1 !important;
+            }
+            body.skin-blue .main-header .navbar .nav > li > a:hover {
+                background: rgba(255, 255, 255, 0.1) !important;
+                color: #fff !important;
+            }
+            /* End Modern Overrides */
+        </style>
     </head>
     <body class="hold-transition skin-blue fixed sidebar-mini">
         <div class="wrapper">
