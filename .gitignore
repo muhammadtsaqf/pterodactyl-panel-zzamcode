@@ -5,7 +5,6 @@
 !.env.example
 .vagrant/*
 .vscode/*
-storage/framework/*
 /.idea
 /nbproject
 /.direnv
