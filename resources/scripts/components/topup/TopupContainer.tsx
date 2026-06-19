@@ -97,7 +97,7 @@ export default () => {
                                     <Button onClick={() => window.open(paymentData.checkoutUrl, '_blank')} color={'primary'}>
                                         Open Checkout Page
                                     </Button>
-                                    <Button onClick={() => setPaymentData(null)} color={'secondary'}>
+                                    <Button onClick={() => setPaymentData(null)} color={'grey'}>
                                         Top-up Again
                                     </Button>
                                 </div>
