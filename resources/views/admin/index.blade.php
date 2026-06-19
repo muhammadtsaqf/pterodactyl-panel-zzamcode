@@ -81,7 +81,7 @@
     .action-btn:hover::after {
         opacity: 1;
     }
-    .btn-discord { background: linear-gradient(135deg, #5865F2, #4752C4); }
+    .btn-telegram { background: linear-gradient(135deg, #0088cc, #00aaff); }
     .btn-docs { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
     .btn-github { background: linear-gradient(135deg, #334155, #0f172a); }
     .btn-support { background: linear-gradient(135deg, #10b981, #059669); }
@@ -103,8 +103,8 @@
 </div>
 <div class="row" style="margin-top: 10px;">
     <div class="col-xs-12 col-md-3" style="margin-bottom: 15px;">
-        <a href="https://discord.gg/" target="_blank" class="action-btn btn-discord">
-            <i class="fa fa-comments" style="font-size: 16px;"></i> Get Help (Discord)
+        <a href="https://t.me/azzamdev" target="_blank" class="action-btn btn-telegram">
+            <i class="fa fa-paper-plane" style="font-size: 16px;"></i> Get Help (Telegram)
         </a>
     </div>
     <div class="col-xs-12 col-md-3" style="margin-bottom: 15px;">
