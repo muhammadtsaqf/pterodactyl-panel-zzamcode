@@ -15,3 +15,7 @@ Route::get('/locales/locale.json', Base\LocaleController::class)
 
 Route::get('/{react}', [Base\IndexController::class, 'index'])
     ->where('react', '^(?!(\/)?(api|auth|admin|daemon)).+');
+
+Route::get('/api/public/stats', [Base\StatsController::class, 'index'])
+    ->withoutMiddleware([\Pterodactyl\Http\Middleware\RequireTwoFactorAuthentication::class, 'auth.session'])
+    ->name('api.public.stats');
