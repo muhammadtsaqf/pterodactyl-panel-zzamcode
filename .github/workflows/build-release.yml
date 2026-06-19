@@ -1,0 +1,50 @@
+name: Build Panel Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'yarn'
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build Frontend Assets
+        run: yarn build:production
+
+      - name: Remove Unnecessary Files
+        run: |
+          rm -rf node_modules
+          rm -rf .git
+          rm -rf .github
+          rm -rf tests
+
+      - name: Create Archive
+        run: |
+          tar -czvf panel.tar.gz .
+
+      - name: Upload Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Try to delete the old release and tag if they exist so we can overwrite it
+          gh release delete latest -y || true
+          git push --delete origin latest || true
+          
+          # Create new release
+          gh release create latest ./panel.tar.gz --title "Latest zzamcode Panel Build" --notes "Automated build of the latest commit on main branch." --make-latest
