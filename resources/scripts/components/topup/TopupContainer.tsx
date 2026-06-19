@@ -9,6 +9,9 @@ import Input from '@/components/elements/Input';
 import { faQrcode } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+import { useStoreActions, useStoreState } from 'easy-peasy';
+import { ApplicationStore } from '@/state';
+
 declare global {
     interface Window {
         TransaksiKita: {
@@ -22,6 +25,9 @@ export default () => {
     const [amount, setAmount] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { clearFlashes, addFlash } = useFlash();
+    
+    const updateUserData = useStoreActions((actions: ApplicationStore) => actions.user.updateUserData);
+    const currentBalance = useStoreState((state: ApplicationStore) => state.user.data?.balance || 0);
 
     const submit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -29,16 +35,18 @@ export default () => {
 
         clearFlashes('topup');
         setIsSubmitting(true);
+        const topupAmount = parseInt(amount, 10);
 
-        http.post('/api/client/account/topup', { amount: parseInt(amount, 10) })
+        http.post('/api/client/account/topup', { amount: topupAmount })
             .then(({ data }) => {
                 if (window.TransaksiKita && data.data && data.data.paymentId) {
                     window.TransaksiKita.pay(data.data.paymentId, {
                         onSuccess: function() {
+                            updateUserData({ balance: currentBalance + topupAmount });
                             addFlash({
                                 key: 'topup',
                                 type: 'success',
-                                message: 'Payment successful! Your balance has been updated.',
+                                message: `Payment successful! Rp ${new Intl.NumberFormat('id-ID').format(topupAmount)} has been added to your balance.`,
                             });
                             setAmount('');
                         },
