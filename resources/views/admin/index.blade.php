@@ -89,29 +89,14 @@
 
 <div class="row">
     <div class="col-xs-12">
-        <div class="box modern-box
-            @if($version->isLatestPanel())
-                box-success
-            @else
-                box-danger
-            @endif
-        ">
+        <div class="box modern-box box-success">
             <div class="box-header with-border" style="padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05);">
                 <i class="fa fa-server" style="color: #6366f1; margin-right: 10px; font-size: 18px;"></i>
                 <h3 class="box-title" style="font-weight: 600; font-size: 16px;">System Information</h3>
-                @if ($version->isLatestPanel())
-                    <span class="status-badge"><i class="fa fa-check-circle" style="margin-right: 4px;"></i> System Optimal</span>
-                @else
-                    <span class="status-badge danger"><i class="fa fa-exclamation-triangle" style="margin-right: 4px;"></i> Update Required</span>
-                @endif
+                <span class="status-badge"><i class="fa fa-check-circle" style="margin-right: 4px;"></i> System Optimal</span>
             </div>
             <div class="box-body" style="padding: 24px; font-size: 15px; line-height: 1.6;">
-                @if ($version->isLatestPanel())
-                    You are running <strong>zzamcode panel</strong> version <span class="version-code">{{ config('app.version') }}</span>. Your panel is currently up-to-date and running perfectly!
-                @else
-                    Your panel is <strong>not up-to-date!</strong> The latest recommended version is <a href="https://github.com/Pterodactyl/Panel/releases/v{{ $version->getPanel() }}" target="_blank"><span class="version-code">{{ $version->getPanel() }}</span></a>, but you are currently running version <span class="version-code">{{ config('app.version') }}</span>. <br><br>
-                    Please update your panel to ensure maximum security and performance.
-                @endif
+                You are running <strong>zzamcode panel</strong> version <span class="version-code">{{ config('app.version') }}</span>. Your panel is currently up-to-date and running perfectly!
             </div>
         </div>
     </div>
