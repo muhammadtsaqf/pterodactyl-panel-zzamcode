@@ -11,10 +11,11 @@ export interface RegisterData {
     name_first: string;
     name_last: string;
     password: string;
+    password_confirmation: string;
     recaptchaData?: string | null;
 }
 
-export default ({ email, username, name_first, name_last, password, recaptchaData }: RegisterData): Promise<RegisterResponse> => {
+export default ({ email, username, name_first, name_last, password, password_confirmation, recaptchaData }: RegisterData): Promise<RegisterResponse> => {
     return new Promise((resolve, reject) => {
         http.get('/sanctum/csrf-cookie')
             .then(() =>
@@ -24,6 +25,7 @@ export default ({ email, username, name_first, name_last, password, recaptchaDat
                     name_first,
                     name_last,
                     password,
+                    password_confirmation,
                     'g-recaptcha-response': recaptchaData,
                 })
             )
