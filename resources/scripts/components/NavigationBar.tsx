@@ -93,9 +93,9 @@ export default () => {
                         </NavLink>
                     </Tooltip>
                     <Tooltip placement={'bottom'} content={'Payment Gateway'}>
-                        <a href={'https://transaksikita.com'} target={'_blank'} rel={'noreferrer'}>
+                        <NavLink to={'/account/topup'} exact>
                             <FontAwesomeIcon icon={faCreditCard} />
-                        </a>
+                        </NavLink>
                     </Tooltip>
                     {rootAdmin && (
                         <Tooltip placement={'bottom'} content={'Admin'}>

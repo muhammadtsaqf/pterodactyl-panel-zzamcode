@@ -152,6 +152,11 @@
                                 <i class="fa fa-gamepad"></i> <span>Application API</span>
                             </a>
                         </li>
+                        <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.payment_gateway') ?: 'active' }}">
+                            <a href="{{ route('admin.payment_gateway')}}">
+                                <i class="fa fa-credit-card"></i> <span>Payment Gateway</span>
+                            </a>
+                        </li>
                         <li class="header">MANAGEMENT</li>
                         <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.databases') ?: 'active' }}">
                             <a href="{{ route('admin.databases') }}">
