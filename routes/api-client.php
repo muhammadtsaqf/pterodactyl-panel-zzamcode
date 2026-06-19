@@ -48,6 +48,11 @@ Route::prefix('/account')->middleware(AccountSubject::class)->group(function () 
     Route::post('/topup', [Client\TopupController::class, 'createPayment']);
 });
 
+Route::prefix('/store')->group(function () {
+    Route::get('/info', [Client\StoreController::class, 'info']);
+    Route::post('/purchase', [Client\StoreController::class, 'purchase']);
+});
+
 /*
 |--------------------------------------------------------------------------
 | Client Control API

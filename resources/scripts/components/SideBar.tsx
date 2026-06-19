@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCogs, faLayerGroup, faSignOutAlt, faCreditCard, faUser, faWallet, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faCogs, faLayerGroup, faSignOutAlt, faCreditCard, faUser, faWallet, faBars, faTimes, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
 import tw, { styled } from 'twin.macro';
@@ -174,6 +174,12 @@ export default () => {
                         <NavLink to={'/'} exact>
                             <FontAwesomeIcon icon={faLayerGroup} />
                             <span className="font-medium text-sm tracking-wide">Dashboard</span>
+                        </NavLink>
+                    </NavItem>
+                    <NavItem>
+                        <NavLink to={'/store'} exact>
+                            <FontAwesomeIcon icon={faShoppingCart} />
+                            <span className="font-medium text-sm tracking-wide">Store</span>
                         </NavLink>
                     </NavItem>
                     <NavItem>
