@@ -39,7 +39,8 @@ jobs:
 
       - name: Create Archive
         run: |
-          tar -czvf panel.tar.gz .
+          tar -czvf ../panel.tar.gz .
+          mv ../panel.tar.gz ./panel.tar.gz
 
       - name: Upload Release
         env:
