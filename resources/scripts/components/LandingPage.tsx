@@ -86,7 +86,7 @@ const ActionButtons = styled.div`
     ${tw`flex gap-4`};
     
     .btn-primary {
-        ${tw`px-8 py-4 rounded-xl text-white font-semibold transition-all shadow-lg shadow-indigo-500/30`};
+        ${tw`px-8 py-4 rounded-xl text-white font-semibold transition-all shadow-lg`};
         background: #6366f1;
         &:hover {
             background: #4f46e5;
