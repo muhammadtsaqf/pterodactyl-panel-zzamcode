@@ -86,8 +86,15 @@ async function startBot(targetNumber) {
 
     if (!sock.authState.creds.registered && targetNumber) {
         currentStatus = 'pairing';
-        const code = await sock.requestPairingCode(targetNumber);
-        return code;
+        // Wait a few seconds for the socket connection to initialize before requesting code
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        try {
+            const code = await sock.requestPairingCode(targetNumber);
+            return code;
+        } catch (err) {
+            console.error('Pairing code error:', err);
+            throw new Error('Gagal mendapatkan pairing code, pastikan nomor benar dan layanan WA tidak memblokir. Pesan: ' + err.message);
+        }
     }
 
     return null;
