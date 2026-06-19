@@ -8,7 +8,7 @@ import SubNavigation from '@/components/elements/SubNavigation';
 import { useLocation } from 'react-router';
 import Spinner from '@/components/elements/Spinner';
 import routes from '@/routers/routes';
-import TopupContainer from '@/components/topup/TopupContainer';
+
 import StoreContainer from '@/components/store/StoreContainer';
 import SideBar from '@/components/SideBar';
 
@@ -50,9 +50,7 @@ export default () => {
                             <Route path={'/'} exact>
                                 <DashboardContainer />
                             </Route>
-                            <Route path={'/topup'} exact>
-                                <TopupContainer />
-                            </Route>
+
                             <Route path={'/store'} exact>
                                 <StoreContainer />
                             </Route>

@@ -4,12 +4,19 @@ import tw, { styled } from 'twin.macro';
 import http from '@/api/http';
 import FlashMessageRender from '@/components/FlashMessageRender';
 import useFlash from '@/plugins/useFlash';
-import { useStoreState } from 'easy-peasy';
-import { ApplicationStore } from '@/state';
 import Button from '@/components/elements/Button';
 import Spinner from '@/components/elements/Spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMicrochip, faMemory, faHdd, faDatabase, faArchive, faNetworkWired, faShoppingCart, faServer } from '@fortawesome/free-solid-svg-icons';
+import { faMicrochip, faMemory, faHdd, faDatabase, faArchive, faNetworkWired, faShoppingCart, faServer, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
+
+declare global {
+    interface Window {
+        TransaksiKita: {
+            pay: (paymentId: string, options: any) => void;
+            close: () => void;
+        };
+    }
+}
 
 const Container = styled.div`
     ${tw`max-w-7xl mx-auto w-full`};
@@ -91,7 +98,6 @@ interface StoreInfo {
 
 export default () => {
     const { clearFlashes, addFlash } = useFlash();
-    const balance = useStoreState((state: ApplicationStore) => state.user.data!.balance);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [info, setInfo] = useState<StoreInfo | null>(null);
@@ -103,6 +109,7 @@ export default () => {
     const [backups, setBackups] = useState(1);
     const [ports, setPorts] = useState(1);
     const [eggId, setEggId] = useState(0);
+    const [duration, setDuration] = useState(1);
 
     useEffect(() => {
         clearFlashes('store');
@@ -156,7 +163,8 @@ export default () => {
         total += databases * info.prices.database;
         total += backups * info.prices.backup;
         total += ports * info.prices.port;
-        return total;
+        
+        return total * duration;
     };
 
     const totalCost = calculateTotal();
@@ -164,11 +172,6 @@ export default () => {
     const handlePurchase = () => {
         if (eggId === 0) {
             addFlash({ type: 'error', key: 'store', message: 'Please select a server type (Egg).' });
-            return;
-        }
-
-        if (balance < totalCost) {
-            addFlash({ type: 'error', key: 'store', message: 'Insufficient balance to purchase this server.' });
             return;
         }
 
@@ -183,17 +186,54 @@ export default () => {
             databases,
             backups,
             ports,
+            duration,
         }).then(({ data }) => {
-            addFlash({ type: 'success', key: 'store', message: 'Server deployed successfully! It will appear in your dashboard shortly.' });
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 2000);
+            if (window.TransaksiKita && data.data && data.data.paymentId) {
+                window.TransaksiKita.pay(data.data.paymentId, {
+                    onSuccess: function() {
+                        addFlash({
+                            key: 'store',
+                            type: 'success',
+                            message: 'Payment successful! Your server is being deployed and will appear in your dashboard shortly.',
+                        });
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 2500);
+                    },
+                    onExpired: function() {
+                        addFlash({
+                            key: 'store',
+                            type: 'error',
+                            message: 'Payment expired. Please try again.',
+                        });
+                        setSubmitting(false);
+                    },
+                    onClose: function() {
+                        setSubmitting(false);
+                    },
+                    onError: function(err: any) {
+                        addFlash({
+                            key: 'store',
+                            type: 'error',
+                            message: 'Payment Error: ' + err.message,
+                        });
+                        setSubmitting(false);
+                    }
+                });
+            } else {
+                addFlash({
+                    key: 'store',
+                    type: 'error',
+                    message: 'Payment gateway script not loaded properly.',
+                });
+                setSubmitting(false);
+            }
         }).catch(error => {
             setSubmitting(false);
             addFlash({
                 type: 'error',
                 key: 'store',
-                message: error.response?.data?.error || 'An error occurred while deploying the server.',
+                message: error.response?.data?.error || 'An error occurred while generating checkout.',
             });
         });
     };
@@ -202,7 +242,7 @@ export default () => {
         <PageContentBlock title="Store">
             <Container>
                 <Header>Server Store</Header>
-                <Subtitle>Customize and deploy your new server instantly using your account balance.</Subtitle>
+                <Subtitle>Customize and deploy your new server instantly with Pay-As-You-Go billing.</Subtitle>
                 
                 <FlashMessageRender byKey="store" className="mb-6" />
 
@@ -249,34 +289,41 @@ export default () => {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <SliderGroup>
                                     <label>
-                                        <span><FontAwesomeIcon icon={faDatabase} className="mr-2 text-red-400"/> Databases</span>
+                                        <span><FontAwesomeIcon icon={faDatabase} className="mr-2 text-blue-300"/> Databases</span>
                                         <span className="text-indigo-400 font-bold">{databases}</span>
                                     </label>
                                     <input type="range" min="0" max="10" step="1" value={databases} onChange={(e) => setDatabases(Number(e.target.value))} />
+                                    <div className="text-xs text-neutral-500 mt-1">{info.prices.database.toLocaleString()} / ea</div>
                                 </SliderGroup>
+
                                 <SliderGroup>
                                     <label>
                                         <span><FontAwesomeIcon icon={faArchive} className="mr-2 text-yellow-400"/> Backups</span>
                                         <span className="text-indigo-400 font-bold">{backups}</span>
                                     </label>
                                     <input type="range" min="0" max="10" step="1" value={backups} onChange={(e) => setBackups(Number(e.target.value))} />
+                                    <div className="text-xs text-neutral-500 mt-1">{info.prices.backup.toLocaleString()} / ea</div>
                                 </SliderGroup>
+
                                 <SliderGroup>
                                     <label>
-                                        <span><FontAwesomeIcon icon={faNetworkWired} className="mr-2 text-cyan-400"/> Extra Ports</span>
+                                        <span><FontAwesomeIcon icon={faNetworkWired} className="mr-2 text-emerald-300"/> Extra Ports</span>
                                         <span className="text-indigo-400 font-bold">{ports}</span>
                                     </label>
                                     <input type="range" min="0" max="5" step="1" value={ports} onChange={(e) => setPorts(Number(e.target.value))} />
+                                    <div className="text-xs text-neutral-500 mt-1">{info.prices.port.toLocaleString()} / ea</div>
                                 </SliderGroup>
                             </div>
                         </GlassCard>
+                    </div>
 
+                    {/* Right Column: Server Settings & Summary */}
+                    <div className="space-y-6">
                         <GlassCard>
-                            <h3 className="text-xl font-semibold mb-6 text-neutral-200 border-b border-neutral-700 pb-2">
-                                Software Type
+                            <h3 className="text-xl font-semibold mb-4 text-neutral-200 border-b border-neutral-700 pb-2">
+                                Server Type
                             </h3>
                             <SelectBox value={eggId} onChange={(e) => setEggId(Number(e.target.value))}>
-                                <option value={0} disabled>Select a software...</option>
                                 {info.nests.map(nest => (
                                     <optgroup key={nest.id} label={nest.name}>
                                         {nest.eggs.map(egg => (
@@ -285,77 +332,57 @@ export default () => {
                                     </optgroup>
                                 ))}
                             </SelectBox>
-                            <p className="text-xs text-neutral-500 mt-2">
-                                {eggId !== 0 && info.nests.flatMap(n => n.eggs).find(e => e.id === eggId)?.description}
-                            </p>
+                            {info.nests.map(nest => nest.eggs.map(egg => 
+                                egg.id === eggId && egg.description && (
+                                    <p key={egg.id} className="text-xs text-neutral-400 mt-3 italic line-clamp-3">
+                                        {egg.description}
+                                    </p>
+                                )
+                            ))}
                         </GlassCard>
-                    </div>
 
-                    {/* Right Column: Order Summary */}
-                    <div>
-                        <div className="sticky top-24">
-                            <GlassCard style={{ background: 'linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8))' }}>
-                                <h3 className="text-xl font-semibold mb-6 text-neutral-200">Order Summary</h3>
-                                
-                                <div className="space-y-3 mb-6 text-sm text-neutral-300">
-                                    <div className="flex justify-between">
-                                        <span>CPU ({cpu}%)</span>
-                                        <span>{((cpu / 10) * info.prices.cpu).toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span>RAM ({ram} MB)</span>
-                                        <span>{((ram / 1024) * info.prices.ram).toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span>Disk ({disk} MB)</span>
-                                        <span>{((disk / 1024) * info.prices.disk).toLocaleString()}</span>
-                                    </div>
-                                    {databases > 0 && (
-                                        <div className="flex justify-between">
-                                            <span>Databases ({databases})</span>
-                                            <span>{(databases * info.prices.database).toLocaleString()}</span>
-                                        </div>
-                                    )}
-                                    {backups > 0 && (
-                                        <div className="flex justify-between">
-                                            <span>Backups ({backups})</span>
-                                            <span>{(backups * info.prices.backup).toLocaleString()}</span>
-                                        </div>
-                                    )}
-                                    {ports > 0 && (
-                                        <div className="flex justify-between">
-                                            <span>Extra Ports ({ports})</span>
-                                            <span>{(ports * info.prices.port).toLocaleString()}</span>
-                                        </div>
-                                    )}
-                                </div>
-                                
-                                <div className="border-t border-neutral-700 pt-4 mb-6">
-                                    <div className="flex justify-between items-end">
-                                        <span className="text-neutral-400 uppercase tracking-wider text-xs font-bold">Total Cost</span>
-                                        <span className="text-3xl font-bold text-indigo-400">{totalCost.toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center mt-2 text-xs">
-                                        <span className="text-neutral-500">Your Balance</span>
-                                        <span className={`font-bold ${balance < totalCost ? 'text-red-400' : 'text-emerald-400'}`}>
-                                            {balance.toLocaleString()}
-                                        </span>
-                                    </div>
-                                </div>
+                        <GlassCard>
+                            <h3 className="text-xl font-semibold mb-4 text-neutral-200 border-b border-neutral-700 pb-2">
+                                <FontAwesomeIcon icon={faCalendarAlt} className="mr-2 text-pink-400" /> Billing Cycle
+                            </h3>
+                            <SelectBox value={duration} onChange={(e) => setDuration(Number(e.target.value))}>
+                                <option value={1}>1 Month</option>
+                                <option value={3}>3 Months</option>
+                                <option value={12}>1 Year (12 Months)</option>
+                            </SelectBox>
+                        </GlassCard>
 
-                                <Button 
-                                    className="w-full py-4 text-lg font-bold shadow-lg" 
-                                    color="primary" 
-                                    disabled={submitting || balance < totalCost || eggId === 0}
-                                    onClick={handlePurchase}
-                                >
-                                    {submitting ? <Spinner size="small" /> : 'Deploy Server'}
-                                </Button>
-                                {balance < totalCost && (
-                                    <p className="text-red-400 text-xs text-center mt-3">You don't have enough balance.</p>
-                                )}
-                            </GlassCard>
-                        </div>
+                        <GlassCard className="border-indigo-500/30">
+                            <h3 className="text-xl font-semibold mb-4 text-neutral-200 border-b border-neutral-700 pb-2">
+                                Order Summary
+                            </h3>
+                            
+                            <div className="space-y-3 mb-6">
+                                <div className="flex justify-between text-sm text-neutral-300">
+                                    <span>Server Resources</span>
+                                    <span>Rp {(totalCost / duration).toLocaleString()} /mo</span>
+                                </div>
+                                <div className="flex justify-between text-sm text-neutral-300">
+                                    <span>Duration</span>
+                                    <span>{duration} Month(s)</span>
+                                </div>
+                                <div className="border-t border-neutral-700 pt-3 flex justify-between items-center">
+                                    <span className="font-semibold text-neutral-200">Total Price</span>
+                                    <span className="text-2xl font-bold text-indigo-400">
+                                        Rp {totalCost.toLocaleString()}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <Button 
+                                size="large" 
+                                className="w-full flex items-center justify-center py-4 text-lg bg-gradient-to-r from-indigo-600 to-purple-600 border-0 hover:from-indigo-500 hover:to-purple-500 shadow-lg"
+                                onClick={handlePurchase}
+                                disabled={submitting || totalCost <= 0}
+                            >
+                                {submitting ? <Spinner size="small" /> : 'Checkout & Pay'}
+                            </Button>
+                        </GlassCard>
                     </div>
                 </Grid>
             </Container>

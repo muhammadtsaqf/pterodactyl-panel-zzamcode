@@ -58,6 +58,9 @@ export interface Server {
         backups: number;
     };
     isTransferring: boolean;
+    storeRenewalCost: number | null;
+    storeRenewalDuration: number | null;
+    storeExpiresAt: Date | null;
     variables: ServerEggVariable[];
     allocations: Allocation[];
 }
@@ -83,6 +86,9 @@ export const rawDataToServerObject = ({ attributes: data }: FractalResponseData)
     eggFeatures: data.egg_features || [],
     featureLimits: { ...data.feature_limits },
     isTransferring: data.is_transferring,
+    storeRenewalCost: data.store_renewal_cost || null,
+    storeRenewalDuration: data.store_renewal_duration || null,
+    storeExpiresAt: data.store_expires_at ? new Date(data.store_expires_at) : null,
     variables: ((data.relationships?.variables as FractalResponseList | undefined)?.data || []).map(
         rawDataToServerEggVariable
     ),

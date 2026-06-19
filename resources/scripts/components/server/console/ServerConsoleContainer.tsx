@@ -10,6 +10,7 @@ import StatGraphs from '@/components/server/console/StatGraphs';
 import PowerButtons from '@/components/server/console/PowerButtons';
 import ServerDetailsBlock from '@/components/server/console/ServerDetailsBlock';
 import { Alert } from '@/components/elements/alert';
+import ServerBillingBlock from '@/components/server/console/ServerBillingBlock';
 
 export type PowerAction = 'start' | 'stop' | 'restart' | 'kill';
 
@@ -45,6 +46,7 @@ const ServerConsoleContainer = () => {
                     </Can>
                 </div>
             </div>
+            <ServerBillingBlock />
             <div className={'grid grid-cols-4 gap-2 sm:gap-4 mb-4'}>
                 <div className={'flex col-span-4 lg:col-span-3'}>
                     <Spinner.Suspense>

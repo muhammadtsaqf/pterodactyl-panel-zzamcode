@@ -182,12 +182,7 @@ export default () => {
                             <span className="font-medium text-sm tracking-wide">Store</span>
                         </NavLink>
                     </NavItem>
-                    <NavItem>
-                        <NavLink to={'/topup'} exact>
-                            <FontAwesomeIcon icon={faWallet} className="mr-3 text-lg w-5 text-center" />
-                            <span className="font-medium text-sm tracking-wide">Top-up Balance</span>
-                        </NavLink>
-                    </NavItem>
+
                     <NavItem>
                         <NavLink to={'/account'}>
                             <FontAwesomeIcon icon={faUser} className="mr-3 text-lg w-5 text-center" />

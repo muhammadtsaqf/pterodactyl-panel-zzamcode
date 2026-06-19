@@ -51,6 +51,8 @@ Route::prefix('/account')->middleware(AccountSubject::class)->group(function () 
 Route::prefix('/store')->group(function () {
     Route::get('/info', [Client\StoreController::class, 'info']);
     Route::post('/purchase', [Client\StoreController::class, 'purchase']);
+    Route::post('/renew/{server}', [Client\StoreController::class, 'renew']);
+    Route::get('/orders/{referenceId}', [Client\StoreController::class, 'getOrderStatus']);
 });
 
 /*

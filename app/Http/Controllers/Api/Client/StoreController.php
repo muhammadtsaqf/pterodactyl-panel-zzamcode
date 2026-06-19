@@ -6,17 +6,17 @@ use Pterodactyl\Models\User;
 use Illuminate\Http\Request;
 use Pterodactyl\Models\Egg;
 use Pterodactyl\Models\Nest;
+use Pterodactyl\Models\Server;
+use Pterodactyl\Models\StoreOrder;
 use Pterodactyl\Contracts\Repository\SettingsRepositoryInterface;
 use Pterodactyl\Services\Deployment\AllocationSelectionService;
-use Pterodactyl\Services\Servers\ServerCreationService;
 use Illuminate\Support\Str;
 
 class StoreController extends ClientApiController
 {
     public function __construct(
         private SettingsRepositoryInterface $settings,
-        private AllocationSelectionService $allocationSelectionService,
-        private ServerCreationService $serverCreationService
+        private AllocationSelectionService $allocationSelectionService
     ) {
         parent::__construct();
     }
@@ -54,6 +54,48 @@ class StoreController extends ClientApiController
         ];
     }
 
+    private function generatePayment(User $user, int $amount, string $referenceId, string $description)
+    {
+        $projectId = $this->settings->get('transaksikita::project_id');
+        $publicKey = $this->settings->get('transaksikita::public_key');
+        $secretKey = $this->settings->get('transaksikita::secret_key');
+
+        if (empty($projectId) || empty($publicKey) || empty($secretKey)) {
+            throw new \Exception('Payment Gateway is not fully configured.');
+        }
+
+        $ch = curl_init('https://transaksikita.com/api/v1/create-payment');
+        curl_setopt_array($ch, [
+            CURLOPT_POST => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'X-PROJECT-ID: ' . $projectId,
+                'X-PUBLIC-KEY: ' . $publicKey,
+                'Authorization: Bearer ' . $secretKey,
+            ],
+            CURLOPT_POSTFIELDS => json_encode([
+                'amount' => $amount,
+                'customerName' => $user->name_first . ' ' . $user->name_last,
+                'description' => $description,
+                'expiredMinutes' => 10,
+                'referenceId' => $referenceId,
+            ]),
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        $decoded = json_decode($response, true);
+
+        if ($httpCode === 200 && isset($decoded['success']) && $decoded['success']) {
+            return $decoded['data']['paymentId'];
+        }
+
+        throw new \Exception($decoded['message'] ?? 'Failed to create payment with gateway.');
+    }
+
     public function purchase(Request $request)
     {
         if ($this->settings->get('settings::store:enabled', 1) == 0) {
@@ -73,6 +115,7 @@ class StoreController extends ClientApiController
             'databases' => 'required|integer|min:0',
             'backups' => 'required|integer|min:0',
             'ports' => 'required|integer|min:0',
+            'duration' => 'required|integer|in:1,3,12',
         ]);
 
         $egg = Egg::with('variables')->findOrFail($validated['egg_id']);
@@ -85,31 +128,25 @@ class StoreController extends ClientApiController
         $pricePort = (int)$this->settings->get('settings::store:price:port', 500);
 
         // Calculate total cost
-        $totalCost = 0;
-        $totalCost += ($validated['cpu'] / 10) * $priceCpu;
-        $totalCost += ($validated['ram'] / 1024) * $priceRam;
-        $totalCost += ($validated['disk'] / 1024) * $priceDisk;
-        $totalCost += $validated['databases'] * $priceDb;
-        $totalCost += $validated['backups'] * $priceBackup;
-        $totalCost += $validated['ports'] * $pricePort;
+        $monthlyCost = 0;
+        $monthlyCost += ($validated['cpu'] / 10) * $priceCpu;
+        $monthlyCost += ($validated['ram'] / 1024) * $priceRam;
+        $monthlyCost += ($validated['disk'] / 1024) * $priceDisk;
+        $monthlyCost += $validated['databases'] * $priceDb;
+        $monthlyCost += $validated['backups'] * $priceBackup;
+        $monthlyCost += $validated['ports'] * $pricePort;
+
+        $totalCost = $monthlyCost * $validated['duration'];
 
         /** @var User $user */
         $user = $request->user();
 
-        if ($user->balance < $totalCost) {
-            return response()->json(['error' => 'Insufficient balance.'], 400);
-        }
-
-        // Need an allocation on the node
+        // Check if node has allocations (just a quick check before payment)
         try {
             $allocation = $this->allocationSelectionService->setNodes([$nodeId])->handle();
         } catch (\Exception $e) {
-            return response()->json(['error' => 'No available ports on the selected node.'], 500);
+            return response()->json(['error' => 'No available ports on the selected node. Please contact administrator.'], 500);
         }
-
-        // Deduct balance
-        $user->balance -= $totalCost;
-        $user->save();
 
         // Environment variables defaults
         $environment = [];
@@ -124,7 +161,7 @@ class StoreController extends ClientApiController
             'nest_id' => $egg->nest_id,
             'node_id' => $nodeId,
             'allocation_id' => $allocation->id,
-            'allocation_limit' => $validated['ports'] + 1, // 1 default + additional
+            'allocation_limit' => $validated['ports'] + 1,
             'backup_limit' => $validated['backups'],
             'database_limit' => $validated['databases'],
             'environment' => $environment,
@@ -136,16 +173,94 @@ class StoreController extends ClientApiController
             'image' => $egg->docker_images[0] ?? $egg->docker_image ?? 'ghcr.io/pterodactyl/yolks:java_17',
             'startup' => $egg->startup,
             'start_on_completion' => true,
+            'store_duration_months' => $validated['duration'], // passed to webhook
         ];
 
+        $referenceId = 'STORE-' . $user->id . '-' . time() . '-' . Str::random(5);
+
         try {
-            $server = $this->serverCreationService->handle($data);
-            return response()->json(['success' => true, 'server_id' => $server->uuidShort]);
+            $paymentId = $this->generatePayment($user, $totalCost, $referenceId, 'Purchase Server (' . $validated['duration'] . ' Months)');
+
+            StoreOrder::create([
+                'user_id' => $user->id,
+                'type' => 'purchase',
+                'data' => $data,
+                'amount' => $totalCost,
+                'reference_id' => $referenceId,
+                'payment_id' => $paymentId,
+                'status' => 'pending',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'paymentId' => $paymentId,
+                    'referenceId' => $referenceId,
+                ]
+            ]);
         } catch (\Exception $e) {
-            // Refund balance on failure
-            $user->balance += $totalCost;
-            $user->save();
-            return response()->json(['error' => 'Failed to create server: ' . $e->getMessage()], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    public function renew(Request $request, Server $server)
+    {
+        $validated = $request->validate([
+            'duration' => 'required|integer|in:1,3,12',
+        ]);
+
+        /** @var User $user */
+        $user = $request->user();
+
+        if ($server->owner_id !== $user->id) {
+            return response()->json(['error' => 'You do not own this server.'], 403);
+        }
+
+        if (!$server->store_renewal_cost) {
+            return response()->json(['error' => 'This server cannot be renewed because it was not purchased from the store.'], 400);
+        }
+
+        // Base renewal cost is the original monthly cost
+        $originalMonthlyCost = $server->store_renewal_cost / ($server->store_renewal_duration ?: 1);
+        $totalCost = $originalMonthlyCost * $validated['duration'];
+
+        $referenceId = 'STORE-RENEW-' . $server->id . '-' . time() . '-' . Str::random(5);
+
+        try {
+            $paymentId = $this->generatePayment($user, $totalCost, $referenceId, 'Renew Server ' . $server->uuidShort . ' (' . $validated['duration'] . ' Months)');
+
+            StoreOrder::create([
+                'user_id' => $user->id,
+                'type' => 'renew',
+                'server_id' => $server->id,
+                'data' => ['duration' => $validated['duration']],
+                'amount' => $totalCost,
+                'reference_id' => $referenceId,
+                'payment_id' => $paymentId,
+                'status' => 'pending',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'paymentId' => $paymentId,
+                    'referenceId' => $referenceId,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getOrderStatus(Request $request, $referenceId)
+    {
+        $order = StoreOrder::where('reference_id', $referenceId)->where('user_id', $request->user()->id)->first();
+        if (!$order) {
+            return response()->json(['error' => 'Order not found'], 404);
+        }
+
+        return response()->json([
+            'status' => $order->status,
+        ]);
     }
 }
