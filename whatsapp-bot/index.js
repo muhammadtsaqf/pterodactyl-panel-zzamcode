@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, fetchLatestBaileysVersion } from '@whiskeysockets/baileys';
+import { makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, fetchLatestBaileysVersion, jidNormalizedUser } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import axios from 'axios';
 import fs from 'fs';
@@ -91,7 +91,9 @@ async function startBot(targetNumber) {
             await sock.sendPresenceUpdate('available', msg.key.remoteJid);
         } catch (e) {}
 
-        const sender = msg.key.remoteJid.split('@')[0];
+        // Normalize JID to ensure we get the clean phone number without device suffixes
+        const normalizedJid = jidNormalizedUser(msg.key.remoteJid);
+        const sender = normalizedJid.split('@')[0];
         const text = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
 
         if (!text) return;
