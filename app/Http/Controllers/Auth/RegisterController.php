@@ -34,6 +34,10 @@ class RegisterController extends AbstractLoginController
      */
     public function register(Request $request): JsonResponse
     {
+        if (!config('app.registration', false)) {
+            throw new \Symfony\Component\HttpKernel\Exception\HttpException(403, 'Registration is currently disabled.');
+        }
+
         $this->validate($request, [
             'email' => 'required|email|unique:users,email',
             'username' => 'required|string|alpha_dash|between:1,255|unique:users,username',

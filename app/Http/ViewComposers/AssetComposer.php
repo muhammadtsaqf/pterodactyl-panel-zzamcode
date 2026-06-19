@@ -27,6 +27,8 @@ class AssetComposer
                 'enabled' => config('recaptcha.enabled', false),
                 'siteKey' => config('recaptcha.website_key') ?? '',
             ],
+            'logo' => config('app.logo') ?? '/assets/svgs/pterodactyl.svg',
+            'registration' => (bool) config('app.registration', false),
         ]);
     }
 }

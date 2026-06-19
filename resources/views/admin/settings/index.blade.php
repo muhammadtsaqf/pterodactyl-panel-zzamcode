@@ -21,7 +21,7 @@
                 <div class="box-header with-border">
                     <h3 class="box-title">Panel Settings</h3>
                 </div>
-                <form action="{{ route('admin.settings') }}" method="POST">
+                <form action="{{ route('admin.settings') }}" method="POST" enctype="multipart/form-data">
                     <div class="box-body">
                         <div class="row">
                             <div class="form-group col-md-4">
@@ -60,6 +60,39 @@
                                         @endforeach
                                     </select>
                                     <p class="text-muted"><small>The default language to use when rendering UI components.</small></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-md-4">
+                                <label class="control-label">Enable Registration</label>
+                                <div>
+                                    <div class="btn-group" data-toggle="buttons">
+                                        @php
+                                            $regLevel = old('app:registration', config('app.registration', '0'));
+                                        @endphp
+                                        <label class="btn btn-primary @if ($regLevel == '0') active @endif">
+                                            <input type="radio" name="app:registration" autocomplete="off" value="0" @if ($regLevel == '0') checked @endif> Disabled
+                                        </label>
+                                        <label class="btn btn-primary @if ($regLevel == '1') active @endif">
+                                            <input type="radio" name="app:registration" autocomplete="off" value="1" @if ($regLevel == '1') checked @endif> Enabled
+                                        </label>
+                                    </div>
+                                    <p class="text-muted"><small>Enable or disable the public user registration feature.</small></p>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label class="control-label">Custom Logo (Login & Register)</label>
+                                <div>
+                                    <input type="file" class="form-control" name="app:logo" accept="image/*" />
+                                    <p class="text-muted"><small>Upload a custom logo to replace the default Pterodactyl logo on the authentication pages. Leave empty to keep the current one.</small></p>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label class="control-label">Custom Favicon</label>
+                                <div>
+                                    <input type="file" class="form-control" name="app:favicon" accept="image/x-icon,image/png,image/jpeg,image/svg+xml,image/webp" />
+                                    <p class="text-muted"><small>Upload a custom icon that will be displayed in the browser tab. Leave empty to keep the current one.</small></p>
                                 </div>
                             </div>
                         </div>

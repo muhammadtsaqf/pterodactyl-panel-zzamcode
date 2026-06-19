@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import { useStoreState } from 'easy-peasy';
 import { Form } from 'formik';
 import styled from 'styled-components/macro';
 import { breakpoint } from '@/theme';
@@ -28,7 +29,10 @@ const Container = styled.div`
     `};
 `;
 
-export default forwardRef<HTMLFormElement, Props>(({ title, ...props }, ref) => (
+export default forwardRef<HTMLFormElement, Props>(({ title, ...props }, ref) => {
+    const logo = useStoreState((state: any) => state.settings.data!.logo);
+    
+    return (
     <Container>
         {title && <h2 css={tw`text-3xl text-center text-neutral-100 font-medium py-4`}>{title}</h2>}
         <FlashMessageRender css={tw`mb-2 px-1`} />
@@ -45,7 +49,7 @@ export default forwardRef<HTMLFormElement, Props>(({ title, ...props }, ref) => 
                 }}
             >
                 <div css={tw`mb-8 flex justify-center`}>
-                    <img src={'/assets/svgs/pterodactyl.svg'} css={tw`w-40 md:w-56 drop-shadow-lg`} />
+                    <img src={logo || '/assets/svgs/pterodactyl.svg'} css={tw`w-40 md:w-56 drop-shadow-lg`} />
                 </div>
                 <div css={tw`flex-1`}>{props.children}</div>
             </div>
@@ -62,4 +66,5 @@ export default forwardRef<HTMLFormElement, Props>(({ title, ...props }, ref) => 
             </a>
         </p>
     </Container>
-));
+    );
+});

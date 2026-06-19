@@ -1,4 +1,5 @@
 import React from 'react';
+import { useStoreState } from 'easy-peasy';
 import { Route, Switch, useRouteMatch } from 'react-router-dom';
 import LoginContainer from '@/components/auth/LoginContainer';
 import RegisterContainer from '@/components/auth/RegisterContainer';
@@ -12,6 +13,7 @@ export default () => {
     const history = useHistory();
     const location = useLocation();
     const { path } = useRouteMatch();
+    const registrationEnabled = useStoreState((state: any) => state.settings.data!.registration);
 
     return (
         <div 
@@ -28,7 +30,9 @@ export default () => {
             <div className="z-10 w-full px-4 sm:px-0">
                 <Switch location={location}>
                     <Route path={`${path}/login`} component={LoginContainer} exact />
-                <Route path={`${path}/register`} component={RegisterContainer} exact />
+                {registrationEnabled && (
+                    <Route path={`${path}/register`} component={RegisterContainer} exact />
+                )}
                 <Route path={`${path}/login/checkpoint`} component={LoginCheckpointContainer} />
                 <Route path={`${path}/password`} component={ForgotPasswordContainer} exact />
                 <Route path={`${path}/password/reset/:token`} component={ResetPasswordContainer} />

@@ -7,6 +7,8 @@ export interface SiteSettings {
         enabled: boolean;
         siteKey: string;
     };
+    logo: string;
+    registration: boolean;
 }
 
 export interface SettingsStore {

@@ -113,14 +113,16 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
                             Lupa Password?
                         </Link>
                     </div>
-                    <div css={tw`mt-4 text-center`}>
-                        <Link
-                            to={'/auth/register'}
-                            css={tw`text-xs text-neutral-400 tracking-wide no-underline hover:text-blue-400 transition-colors duration-200 font-medium`}
-                        >
-                            Belum punya akun? Daftar di sini
-                        </Link>
-                    </div>
+                    {useStoreState((state: any) => state.settings.data!.registration) && (
+                        <div css={tw`mt-4 text-center`}>
+                            <Link
+                                to={'/auth/register'}
+                                css={tw`text-xs text-neutral-400 tracking-wide no-underline hover:text-blue-400 transition-colors duration-200 font-medium`}
+                            >
+                                Belum punya akun? Daftar di sini
+                            </Link>
+                        </div>
+                    )}
                 </LoginFormContainer>
             )}
         </Formik>

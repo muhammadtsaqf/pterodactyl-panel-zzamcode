@@ -46,7 +46,27 @@ class IndexController extends Controller
      */
     public function update(BaseSettingsFormRequest $request): RedirectResponse
     {
-        foreach ($request->normalize() as $key => $value) {
+        $data = $request->normalize();
+
+        if ($request->hasFile('app:logo')) {
+            $file = $request->file('app:logo');
+            $filename = 'logo.' . $file->getClientOriginalExtension();
+            $file->move(public_path('assets'), $filename);
+            $data['app:logo'] = '/assets/' . $filename;
+        } elseif (empty($data['app:logo'])) {
+            unset($data['app:logo']); // Avoid overriding with null
+        }
+
+        if ($request->hasFile('app:favicon')) {
+            $file = $request->file('app:favicon');
+            $filename = 'favicon.' . $file->getClientOriginalExtension();
+            $file->move(public_path('assets'), $filename);
+            $data['app:favicon'] = '/assets/' . $filename;
+        } elseif (empty($data['app:favicon'])) {
+            unset($data['app:favicon']); // Avoid overriding with null
+        }
+
+        foreach ($data as $key => $value) {
             $this->settings->set('settings::' . $key, $value);
         }
 
