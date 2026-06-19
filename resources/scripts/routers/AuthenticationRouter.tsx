@@ -37,6 +37,7 @@ export default () => {
                     <NotFound onBack={() => history.push('/auth/login')} />
                 </Route>
             </Switch>
+            </div>
         </div>
     );
 };
