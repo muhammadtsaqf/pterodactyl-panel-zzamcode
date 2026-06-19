@@ -152,9 +152,14 @@
                                 <i class="fa fa-gamepad"></i> <span>Application API</span>
                             </a>
                         </li>
-                        <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.store') ?: 'active' }}">
+                        <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.store') || starts_with(Route::currentRouteName(), 'admin.store_discounts') ? '' : 'active' }}">
                             <a href="{{ route('admin.store')}}">
                                 <i class="fa fa-shopping-cart"></i> <span>Store</span>
+                            </a>
+                        </li>
+                        <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.store_discounts') ?: 'active' }}">
+                            <a href="{{ route('admin.store_discounts')}}">
+                                <i class="fa fa-tags"></i> <span>Store Discounts</span>
                             </a>
                         </li>
                         <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.payment_gateway') ?: 'active' }}">

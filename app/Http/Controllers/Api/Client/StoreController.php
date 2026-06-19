@@ -8,6 +8,7 @@ use Pterodactyl\Models\Egg;
 use Pterodactyl\Models\Nest;
 use Pterodactyl\Models\Server;
 use Pterodactyl\Models\StoreOrder;
+use Pterodactyl\Models\StoreDiscount;
 use Pterodactyl\Contracts\Repository\SettingsRepositoryInterface;
 use Pterodactyl\Services\Deployment\AllocationSelectionService;
 use Illuminate\Support\Str;
@@ -52,6 +53,24 @@ class StoreController extends ClientApiController
             'prices' => $prices,
             'nests' => $nests,
         ];
+    }
+
+    public function validateDiscount(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string'
+        ]);
+
+        $discount = StoreDiscount::where('code', strtoupper($request->input('code')))->first();
+
+        if (!$discount || !$discount->isValid()) {
+            return response()->json(['error' => 'Invalid or expired discount code.'], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'discount_percent' => $discount->discount_percent
+        ]);
     }
 
     private function generatePayment(User $user, int $amount, string $referenceId, string $description)
@@ -108,6 +127,7 @@ class StoreController extends ClientApiController
         }
 
         $validated = $request->validate([
+            'name' => 'required|string|min:1|max:255',
             'egg_id' => 'required|exists:eggs,id',
             'cpu' => 'required|integer|min:10',
             'ram' => 'required|integer|min:512',
@@ -116,6 +136,7 @@ class StoreController extends ClientApiController
             'backups' => 'required|integer|min:0',
             'ports' => 'required|integer|min:0',
             'duration' => 'required|integer|in:1,3,12',
+            'discount_code' => 'nullable|string',
         ]);
 
         $egg = Egg::with('variables')->findOrFail($validated['egg_id']);
@@ -138,6 +159,17 @@ class StoreController extends ClientApiController
 
         $totalCost = $monthlyCost * $validated['duration'];
 
+        $discountModel = null;
+        if (!empty($validated['discount_code'])) {
+            $discountModel = StoreDiscount::where('code', strtoupper($validated['discount_code']))->first();
+            if ($discountModel && $discountModel->isValid()) {
+                $discountAmount = $totalCost * ($discountModel->discount_percent / 100);
+                $totalCost = max(0, $totalCost - $discountAmount);
+            } else {
+                return response()->json(['error' => 'Invalid or expired discount code.'], 400);
+            }
+        }
+
         /** @var User $user */
         $user = $request->user();
 
@@ -155,7 +187,7 @@ class StoreController extends ClientApiController
         }
 
         $data = [
-            'name' => $user->username . '\'s Server',
+            'name' => $validated['name'],
             'owner_id' => $user->id,
             'egg_id' => $egg->id,
             'nest_id' => $egg->nest_id,
@@ -191,6 +223,10 @@ class StoreController extends ClientApiController
                 'status' => 'pending',
             ]);
 
+            if ($discountModel) {
+                $discountModel->increment('uses');
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -207,6 +243,7 @@ class StoreController extends ClientApiController
     {
         $validated = $request->validate([
             'duration' => 'required|integer|in:1,3,12',
+            'discount_code' => 'nullable|string',
         ]);
 
         /** @var User $user */
@@ -224,6 +261,17 @@ class StoreController extends ClientApiController
         $originalMonthlyCost = $server->store_renewal_cost / ($server->store_renewal_duration ?: 1);
         $totalCost = $originalMonthlyCost * $validated['duration'];
 
+        $discountModel = null;
+        if (!empty($validated['discount_code'])) {
+            $discountModel = StoreDiscount::where('code', strtoupper($validated['discount_code']))->first();
+            if ($discountModel && $discountModel->isValid()) {
+                $discountAmount = $totalCost * ($discountModel->discount_percent / 100);
+                $totalCost = max(0, $totalCost - $discountAmount);
+            } else {
+                return response()->json(['error' => 'Invalid or expired discount code.'], 400);
+            }
+        }
+
         $referenceId = 'STORE-RENEW-' . $server->id . '-' . time() . '-' . Str::random(5);
 
         try {
@@ -239,6 +287,10 @@ class StoreController extends ClientApiController
                 'payment_id' => $paymentId,
                 'status' => 'pending',
             ]);
+
+            if ($discountModel) {
+                $discountModel->increment('uses');
+            }
 
             return response()->json([
                 'success' => true,

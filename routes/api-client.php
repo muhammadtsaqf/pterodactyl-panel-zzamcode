@@ -52,6 +52,7 @@ Route::prefix('/store')->group(function () {
     Route::get('/info', [Client\StoreController::class, 'info']);
     Route::post('/purchase', [Client\StoreController::class, 'purchase']);
     Route::post('/renew/{server}', [Client\StoreController::class, 'renew']);
+    Route::post('/discounts/validate', [Client\StoreController::class, 'validateDiscount']);
     Route::get('/orders/{referenceId}', [Client\StoreController::class, 'getOrderStatus']);
 });
 

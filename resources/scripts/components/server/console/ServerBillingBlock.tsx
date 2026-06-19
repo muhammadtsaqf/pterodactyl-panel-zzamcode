@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ServerContext } from '@/state/server';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCreditCard, faCalendarAlt, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
+import Input from '@/components/elements/Input';
 import Button from '@/components/elements/Button';
 import http from '@/api/http';
 import useFlash from '@/plugins/useFlash';
@@ -23,13 +24,35 @@ export default () => {
     }
 
     const isExpired = isPast(storeExpiresAt);
+
+    const [discountCode, setDiscountCode] = useState('');
+    const [appliedDiscount, setAppliedDiscount] = useState<{code: string, percent: number} | null>(null);
+    const [validatingDiscount, setValidatingDiscount] = useState(false);
+
+    const validateDiscount = () => {
+        if (!discountCode.trim()) return;
+        setValidatingDiscount(true);
+        clearFlashes('server:billing');
+
+        http.post('/api/client/store/discounts/validate', { code: discountCode })
+            .then(({ data }) => {
+                setAppliedDiscount({ code: discountCode, percent: data.discount_percent });
+                addFlash({ type: 'success', key: 'server:billing', message: `Discount code applied! ${data.discount_percent}% off.` });
+            })
+            .catch(err => {
+                setAppliedDiscount(null);
+                addFlash({ type: 'error', key: 'server:billing', message: err.response?.data?.error || 'Invalid discount code.' });
+            })
+            .finally(() => setValidatingDiscount(false));
+    };
     
     const handleRenew = () => {
         clearFlashes('server:billing');
         setSubmitting(true);
 
         http.post(`/api/client/store/renew/${uuid}`, {
-            duration: storeRenewalDuration || 1
+            duration: storeRenewalDuration || 1,
+            discount_code: appliedDiscount?.code
         }).then(({ data }) => {
             if (window.TransaksiKita && data.data && data.data.paymentId) {
                 window.TransaksiKita.pay(data.data.paymentId, {
@@ -109,17 +132,45 @@ export default () => {
                     <div className="text-right hidden sm:block">
                         <p className="text-sm text-neutral-400">Renewal Cost</p>
                         <p className="text-indigo-300 font-bold">
-                            Rp {storeRenewalCost.toLocaleString()} <span className="text-xs font-normal text-neutral-500">/ {storeRenewalDuration} mo</span>
+                            {appliedDiscount ? (
+                                <>
+                                    <span className="line-through text-neutral-500 text-sm mr-2">Rp {storeRenewalCost.toLocaleString()}</span>
+                                    Rp {(storeRenewalCost - (storeRenewalCost * (appliedDiscount.percent / 100))).toLocaleString()}
+                                </>
+                            ) : (
+                                <>Rp {storeRenewalCost.toLocaleString()}</>
+                            )}
+                            <span className="text-xs font-normal text-neutral-500"> / {storeRenewalDuration} mo</span>
                         </p>
                     </div>
                     <Button 
                         color={isExpired ? 'red' : 'primary'} 
-                        className="flex-1 md:flex-none py-3"
+                        className="flex-1 md:flex-none py-3 h-12"
                         onClick={handleRenew}
                         disabled={submitting}
                     >
                         {submitting ? <Spinner size="small" /> : 'Renew Now'}
                     </Button>
+                </div>
+            </div>
+            
+            <div className="mt-4 pt-4 border-t border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-sm text-neutral-400">
+                    Punya kode diskon untuk perpanjangan?
+                </div>
+                <div className="flex gap-2 w-full sm:w-auto">
+                    <Input 
+                        value={discountCode} 
+                        onChange={e => setDiscountCode(e.target.value)} 
+                        placeholder="Masukkan kode promo" 
+                        className="flex-1 sm:w-64"
+                        disabled={appliedDiscount !== null}
+                    />
+                    {appliedDiscount ? (
+                        <Button color="red" onClick={() => setAppliedDiscount(null)}>Hapus</Button>
+                    ) : (
+                        <Button onClick={validateDiscount} disabled={validatingDiscount || !discountCode}>Apply</Button>
+                    )}
                 </div>
             </div>
         </div>

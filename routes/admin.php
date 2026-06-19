@@ -9,6 +9,12 @@ Route::get('/', [Admin\BaseController::class, 'index'])->name('admin.index');
 Route::get('/store', [Admin\StoreController::class, 'index'])->name('admin.store');
 Route::patch('/store', [Admin\StoreController::class, 'update']);
 
+Route::group(['prefix' => 'store-discounts'], function () {
+    Route::get('/', [Admin\StoreDiscountController::class, 'index'])->name('admin.store_discounts');
+    Route::post('/', [Admin\StoreDiscountController::class, 'store'])->name('admin.store_discounts.store');
+    Route::delete('/{discount}', [Admin\StoreDiscountController::class, 'destroy'])->name('admin.store_discounts.destroy');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Location Controller Routes
