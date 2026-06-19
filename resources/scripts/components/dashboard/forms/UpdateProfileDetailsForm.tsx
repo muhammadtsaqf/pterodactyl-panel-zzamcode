@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useStoreState, useStoreActions } from 'easy-peasy';
+import { useStoreState, useStoreActions, Actions } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
 import updateProfileDetails from '@/api/account/updateProfileDetails';
 import useFlash from '@/plugins/useFlash';
@@ -20,7 +20,7 @@ const FlexGrid = styled.div`
 export default () => {
     const { addFlash, clearFlashes } = useFlash();
     const user = useStoreState((state: ApplicationStore) => state.user.data!);
-    const updateUserData = useStoreActions((actions: ApplicationStore['user']) => actions.updateUserData);
+    const updateUserData = useStoreActions((actions: Actions<ApplicationStore>) => actions.user.updateUserData);
 
     const [isSubmit, setSubmit] = useState(false);
     
