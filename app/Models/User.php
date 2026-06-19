@@ -178,6 +178,7 @@ class User extends Model implements
         'language' => 'string',
         'use_totp' => 'boolean',
         'totp_secret' => 'nullable|string',
+        'balance' => 'required|numeric|min:0',
     ];
 
     /**
