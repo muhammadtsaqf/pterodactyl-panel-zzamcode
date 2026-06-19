@@ -51,8 +51,8 @@ class IndexController extends Controller
         if ($request->hasFile('app:logo')) {
             $file = $request->file('app:logo');
             $filename = 'logo.' . $file->getClientOriginalExtension();
-            $file->move(public_path('assets'), $filename);
-            $data['app:logo'] = '/assets/' . $filename;
+            $file->move(storage_path('app/public'), $filename);
+            $data['app:logo'] = '/storage/' . $filename;
         } elseif (empty($data['app:logo'])) {
             unset($data['app:logo']); // Avoid overriding with null
         }
@@ -60,8 +60,8 @@ class IndexController extends Controller
         if ($request->hasFile('app:favicon')) {
             $file = $request->file('app:favicon');
             $filename = 'favicon.' . $file->getClientOriginalExtension();
-            $file->move(public_path('assets'), $filename);
-            $data['app:favicon'] = '/assets/' . $filename;
+            $file->move(storage_path('app/public'), $filename);
+            $data['app:favicon'] = '/storage/' . $filename;
         } elseif (empty($data['app:favicon'])) {
             unset($data['app:favicon']); // Avoid overriding with null
         }
