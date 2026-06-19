@@ -2,6 +2,7 @@ import * as React from 'react';
 import ContentBox from '@/components/elements/ContentBox';
 import UpdatePasswordForm from '@/components/dashboard/forms/UpdatePasswordForm';
 import UpdateEmailAddressForm from '@/components/dashboard/forms/UpdateEmailAddressForm';
+import UpdateProfileDetailsForm from '@/components/dashboard/forms/UpdateProfileDetailsForm';
 import ConfigureTwoFactorForm from '@/components/dashboard/forms/ConfigureTwoFactorForm';
 import PageContentBlock from '@/components/elements/PageContentBlock';
 import tw from 'twin.macro';
@@ -26,6 +27,18 @@ const Container = styled.div`
     }
 `;
 
+const ProfileContainer = styled.div`
+    ${tw`flex flex-col lg:flex-row gap-8 mb-10 mt-10`};
+`;
+
+const LeftColumn = styled.div`
+    ${tw`w-full lg:w-8/12 flex flex-col gap-8`};
+`;
+
+const RightColumn = styled.div`
+    ${tw`w-full lg:w-4/12 flex flex-col gap-8`};
+`;
+
 export default () => {
     const { state } = useLocation<undefined | { twoFactorRedirect?: boolean }>();
 
@@ -37,17 +50,25 @@ export default () => {
                 </MessageBox>
             )}
 
-            <Container css={[tw`lg:grid lg:grid-cols-3 mb-10`, state?.twoFactorRedirect ? tw`mt-4` : tw`mt-10`]}>
-                <ContentBox title={'Update Password'} showFlashes={'account:password'}>
-                    <UpdatePasswordForm />
-                </ContentBox>
-                <ContentBox css={tw`mt-8 sm:mt-0 sm:ml-8`} title={'Update Email Address'} showFlashes={'account:email'}>
-                    <UpdateEmailAddressForm />
-                </ContentBox>
-                <ContentBox css={tw`md:ml-8 mt-8 md:mt-0`} title={'Two-Step Verification'}>
-                    <ConfigureTwoFactorForm />
-                </ContentBox>
-            </Container>
+            <ProfileContainer>
+                <LeftColumn>
+                    <ContentBox title={'Update Profile Details'} showFlashes={'account:profile'}>
+                        <UpdateProfileDetailsForm />
+                    </ContentBox>
+                    <ContentBox title={'Update Password'} showFlashes={'account:password'}>
+                        <UpdatePasswordForm />
+                    </ContentBox>
+                </LeftColumn>
+                
+                <RightColumn>
+                    <ContentBox title={'Update Email Address'} showFlashes={'account:email'}>
+                        <UpdateEmailAddressForm />
+                    </ContentBox>
+                    <ContentBox title={'Two-Step Verification'}>
+                        <ConfigureTwoFactorForm />
+                    </ContentBox>
+                </RightColumn>
+            </ProfileContainer>
         </PageContentBlock>
     );
 };

@@ -27,6 +27,14 @@ class AccountTransformer extends BaseClientTransformer
             'first_name' => $model->name_first,
             'last_name' => $model->name_last,
             'language' => $model->language,
+            'phone' => $model->phone,
+            'company' => $model->company,
+            'address_1' => $model->address_1,
+            'address_2' => $model->address_2,
+            'city' => $model->city,
+            'state' => $model->state,
+            'zip' => $model->zip,
+            'country' => $model->country,
         ];
     }
 }

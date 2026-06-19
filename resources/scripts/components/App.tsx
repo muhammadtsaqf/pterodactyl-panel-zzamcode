@@ -32,6 +32,16 @@ interface ExtendedWindow extends Window {
         balance: number;
         updated_at: string;
         created_at: string;
+        name_first?: string;
+        name_last?: string;
+        phone?: string;
+        company?: string;
+        address_1?: string;
+        address_2?: string;
+        city?: string;
+        state?: string;
+        zip?: string;
+        country?: string;
         /* eslint-enable camelcase */
     };
 }
@@ -51,6 +61,16 @@ const App = () => {
             balance: Number(PterodactylUser.balance) || 0,
             createdAt: new Date(PterodactylUser.created_at),
             updatedAt: new Date(PterodactylUser.updated_at),
+            firstName: PterodactylUser.name_first,
+            lastName: PterodactylUser.name_last,
+            phone: PterodactylUser.phone,
+            company: PterodactylUser.company,
+            address1: PterodactylUser.address_1,
+            address2: PterodactylUser.address_2,
+            city: PterodactylUser.city,
+            state: PterodactylUser.state,
+            zip: PterodactylUser.zip,
+            country: PterodactylUser.country,
         });
     }
 

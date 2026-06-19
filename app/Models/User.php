@@ -135,6 +135,14 @@ class User extends Model implements
         'gravatar',
         'root_admin',
         'balance',
+        'phone',
+        'company',
+        'address_1',
+        'address_2',
+        'city',
+        'state',
+        'zip',
+        'country',
     ];
 
     /**

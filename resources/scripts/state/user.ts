@@ -11,6 +11,16 @@ export interface UserData {
     balance: number;
     createdAt: Date;
     updatedAt: Date;
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    company?: string;
+    address1?: string;
+    address2?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+    country?: string;
 }
 
 export interface UserStore {
