@@ -72,8 +72,10 @@
             <div class="box-header with-border">
                 <h3 class="box-title">Terminal Logs (Node.js)</h3>
             </div>
-            <div class="box-body" style="background-color: #1e1e1e; padding: 0;">
-                <pre id="terminal-logs" style="background-color: transparent; border: none; color: #00ff00; height: 300px; overflow-y: scroll; margin: 0; padding: 15px; font-family: 'Courier New', Courier, monospace; font-size: 13px;">[SYSTEM] Menghubungkan ke layanan Bot PM2...</pre>
+            <div class="box-body">
+                <div style="background-color: #1e1e1e; border-radius: 6px; padding: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+                    <pre id="terminal-logs" style="background-color: transparent; border: none; color: #00ff00; height: 300px; overflow-y: scroll; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; font-size: 13px;">[SYSTEM] Menghubungkan ke layanan Bot PM2...</pre>
+                </div>
             </div>
         </div>
     </div>

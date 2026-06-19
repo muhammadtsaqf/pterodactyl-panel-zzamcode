@@ -14,10 +14,10 @@ let WA_BOT_SECRET = 'pterodactyl_wa_secret';
 if (fs.existsSync(envPath)) {
     const envContent = fs.readFileSync(envPath, 'utf8');
     const urlMatch = envContent.match(/^APP_URL=(.*)$/m);
-    if (urlMatch) APP_URL = urlMatch[1].trim();
+    if (urlMatch) APP_URL = urlMatch[1].replace(/['"]/g, '').trim();
     
     const secretMatch = envContent.match(/^WA_BOT_SECRET=(.*)$/m);
-    if (secretMatch) WA_BOT_SECRET = secretMatch[1].trim();
+    if (secretMatch) WA_BOT_SECRET = secretMatch[1].replace(/['"]/g, '').trim();
 }
 
 const app = express();
