@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers } from '@whiskeysockets/baileys';
+import { makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, fetchLatestBaileysVersion } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import axios from 'axios';
 import fs from 'fs';
@@ -29,12 +29,16 @@ let currentStatus = 'offline';
 
 async function startBot(targetNumber) {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+    const { version: v } = await fetchLatestBaileysVersion();
 
     sock = makeWASocket({
         auth: state,
+        version: v,
         printQRInTerminal: false,
         logger: pino({ level: 'silent' }),
-        browser: ['Mac OS', 'Safari', '10.15.7']
+        browser: Browsers.macOS('Safari'),
+        syncFullHistory: false,
+        markOnlineOnConnect: true
     });
 
     sock.ev.on('creds.update', saveCreds);
