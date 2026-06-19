@@ -31,10 +31,10 @@ class WebhookController extends Controller
             return response()->json(['reply' => 'Invalid payload.'], 400);
         }
 
-        $user = User::where('whatsapp_number', $phone)->first();
+        $user = User::where('phone', $phone)->first();
 
         if (!$user) {
-            return response()->json(['reply' => "❌ Nomor WhatsApp Anda ({$phone}) belum terdaftar di panel.\n\nSilakan login ke panel dan daftarkan nomor Anda di halaman Account Overview."]);
+            return response()->json(['reply' => "❌ Nomor WhatsApp Anda ({$phone}) belum terdaftar di panel.\n\nSilakan login ke panel dan isi nomor Anda (awali dengan 62 tanpa +) di halaman Account Overview pada kolom Profile Details."]);
         }
 
         $parts = explode(' ', $message);

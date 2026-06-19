@@ -4,7 +4,6 @@ import UpdatePasswordForm from '@/components/dashboard/forms/UpdatePasswordForm'
 import UpdateEmailAddressForm from '@/components/dashboard/forms/UpdateEmailAddressForm';
 import UpdateProfileDetailsForm from '@/components/dashboard/forms/UpdateProfileDetailsForm';
 import ConfigureTwoFactorForm from '@/components/dashboard/forms/ConfigureTwoFactorForm';
-import UpdateWhatsappForm from '@/components/dashboard/forms/UpdateWhatsappForm';
 import PageContentBlock from '@/components/elements/PageContentBlock';
 import tw from 'twin.macro';
 import { breakpoint } from '@/theme';
@@ -64,9 +63,6 @@ export default () => {
                 <RightColumn>
                     <ContentBox title={'Update Email Address'} showFlashes={'account:email'}>
                         <UpdateEmailAddressForm />
-                    </ContentBox>
-                    <ContentBox title={'Update WhatsApp Number'} showFlashes={'account:whatsapp'}>
-                        <UpdateWhatsappForm />
                     </ContentBox>
                     <ContentBox title={'Two-Step Verification'}>
                         <ConfigureTwoFactorForm />

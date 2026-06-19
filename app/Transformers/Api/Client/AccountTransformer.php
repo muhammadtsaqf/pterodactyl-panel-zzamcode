@@ -35,7 +35,6 @@ class AccountTransformer extends BaseClientTransformer
             'state' => $model->state,
             'zip' => $model->zip,
             'country' => $model->country,
-            'whatsapp_number' => $model->whatsapp_number,
         ];
     }
 }
