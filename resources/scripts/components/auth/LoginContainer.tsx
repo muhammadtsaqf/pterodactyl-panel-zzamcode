@@ -3,18 +3,80 @@ import { Link, RouteComponentProps } from 'react-router-dom';
 import login from '@/api/auth/login';
 import LoginFormContainer from '@/components/auth/LoginFormContainer';
 import { useStoreState } from 'easy-peasy';
-import { Formik, FormikHelpers } from 'formik';
+import { Formik, FormikHelpers, useField } from 'formik';
 import { object, string } from 'yup';
-import Field from '@/components/elements/Field';
 import tw from 'twin.macro';
 import Button from '@/components/elements/Button';
 import Reaptcha from 'reaptcha';
 import useFlash from '@/plugins/useFlash';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser, faLock, faEye, faEyeSlash, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 
 interface Values {
     username: string;
     password: string;
 }
+
+const CustomField = ({ icon, label, ...props }: any) => {
+    const [field, meta] = useField(props);
+    return (
+        <div css={tw`flex flex-col`}>
+            <label css={tw`text-xs font-bold text-neutral-400 tracking-wider uppercase mb-2`}>{label}</label>
+            <div css={tw`relative flex items-center`}>
+                <div css={tw`absolute left-4 text-neutral-500`}>
+                    <FontAwesomeIcon icon={icon} />
+                </div>
+                <input 
+                    {...field} 
+                    {...props} 
+                    css={[
+                        tw`w-full border rounded-xl text-sm text-white py-3 pl-10 pr-4 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500`,
+                        meta.touched && meta.error ? tw`border-red-500` : tw`border-neutral-700/50`,
+                    ]} 
+                    style={{ background: 'rgba(30, 41, 59, 0.4)' }}
+                />
+            </div>
+            {meta.touched && meta.error ? (
+                <div css={tw`text-red-500 text-xs mt-1`}>{meta.error}</div>
+            ) : null}
+        </div>
+    );
+};
+
+const CustomPasswordField = ({ icon, label, ...props }: any) => {
+    const [field, meta] = useField(props);
+    const [show, setShow] = useState(false);
+    return (
+        <div css={tw`flex flex-col`}>
+            <label css={tw`text-xs font-bold text-neutral-400 tracking-wider uppercase mb-2`}>{label}</label>
+            <div css={tw`relative flex items-center`}>
+                <div css={tw`absolute left-4 text-neutral-500`}>
+                    <FontAwesomeIcon icon={icon} />
+                </div>
+                <input 
+                    {...field} 
+                    {...props} 
+                    type={show ? 'text' : 'password'}
+                    css={[
+                        tw`w-full border rounded-xl text-sm text-white py-3 pl-10 pr-10 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500`,
+                        meta.touched && meta.error ? tw`border-red-500` : tw`border-neutral-700/50`,
+                    ]} 
+                    style={{ background: 'rgba(30, 41, 59, 0.4)' }}
+                />
+                <button 
+                    type="button" 
+                    onClick={() => setShow(!show)}
+                    css={tw`absolute right-4 text-neutral-500 hover:text-white transition-colors cursor-pointer outline-none`}
+                >
+                    <FontAwesomeIcon icon={show ? faEyeSlash : faEye} />
+                </button>
+            </div>
+            {meta.touched && meta.error ? (
+                <div css={tw`text-red-500 text-xs mt-1`}>{meta.error}</div>
+            ) : null}
+        </div>
+    );
+};
 
 const LoginContainer = ({ history }: RouteComponentProps) => {
     const ref = useRef<Reaptcha>(null);
@@ -74,22 +136,45 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
             })}
         >
             {({ isSubmitting, setSubmitting, submitForm }) => (
-                <LoginFormContainer title={'Login to Continue'} css={tw`w-full flex`}>
-                    <Field type={'text'} label={'Username or Email'} name={'username'} disabled={isSubmitting} />
-                    <div css={tw`mt-6`}>
-                        <Field type={'password'} label={'Password'} name={'password'} disabled={isSubmitting} />
+                <LoginFormContainer title={'Authorize Account'} subtitle={'Masuk menggunakan akun panel Anda.'}>
+                    <CustomField 
+                        icon={faUser} 
+                        label={'Account Access'} 
+                        name={'username'} 
+                        placeholder={'Username or email address'}
+                        disabled={isSubmitting} 
+                    />
+                    
+                    <div css={tw`relative`}>
+                        <CustomPasswordField 
+                            icon={faLock} 
+                            label={'Security Key'} 
+                            name={'password'} 
+                            placeholder={'Enter your password'}
+                            disabled={isSubmitting} 
+                        />
+                        <div css={tw`text-right mt-2`}>
+                            <Link
+                                to={'/auth/password'}
+                                css={tw`text-xs text-neutral-400 tracking-wide no-underline hover:text-white transition-colors duration-200`}
+                            >
+                                Forgot Password?
+                            </Link>
+                        </div>
                     </div>
-                    <div css={tw`mt-6`}>
+
+                    <div css={tw`mt-2`}>
                         <Button 
                             type={'submit'} 
                             size={'xlarge'} 
                             isLoading={isSubmitting} 
                             disabled={isSubmitting}
-                            css={tw`w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 border-none shadow-lg text-white font-bold tracking-wide rounded-lg transition-all duration-300`}
+                            css={tw`w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 border-none shadow-lg text-white font-semibold rounded-xl py-3 transition-all duration-300`}
                         >
-                            Login
+                            Authorize Account <FontAwesomeIcon icon={faArrowRight} />
                         </Button>
                     </div>
+
                     {recaptchaEnabled && (
                         <Reaptcha
                             ref={ref}
@@ -105,21 +190,14 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
                             }}
                         />
                     )}
-                    <div css={tw`mt-6 text-center`}>
-                        <Link
-                            to={'/auth/password'}
-                            css={tw`text-xs text-neutral-400 tracking-wide no-underline hover:text-neutral-200 transition-colors duration-200`}
-                        >
-                            Lupa Password?
-                        </Link>
-                    </div>
+
                     {useStoreState((state: any) => state.settings.data!.registration) && (
-                        <div css={tw`mt-4 text-center`}>
+                        <div css={tw`mt-4 text-center border-t border-white/5 pt-6`}>
                             <Link
                                 to={'/auth/register'}
-                                css={tw`text-xs text-neutral-400 tracking-wide no-underline hover:text-blue-400 transition-colors duration-200 font-medium`}
+                                css={tw`text-xs text-neutral-400 tracking-wide no-underline hover:text-white transition-colors duration-200 font-medium`}
                             >
-                                Belum punya akun? Daftar di sini
+                                Belum punya akun? Create Account
                             </Link>
                         </div>
                     )}
