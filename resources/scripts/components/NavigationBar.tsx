@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCogs, faLayerGroup, faSignOutAlt, faWallet } from '@fortawesome/free-solid-svg-icons';
+import { faCogs, faLayerGroup, faSignOutAlt, faCreditCard } from '@fortawesome/free-solid-svg-icons';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
 import SearchContainer from '@/components/dashboard/search/SearchContainer';
@@ -92,9 +92,9 @@ export default () => {
                             <FontAwesomeIcon icon={faLayerGroup} />
                         </NavLink>
                     </Tooltip>
-                    <Tooltip placement={'bottom'} content={'Topup / Payment'}>
+                    <Tooltip placement={'bottom'} content={'Payment Gateway'}>
                         <a href={'https://transaksikita.com'} target={'_blank'} rel={'noreferrer'}>
-                            <FontAwesomeIcon icon={faWallet} />
+                            <FontAwesomeIcon icon={faCreditCard} />
                         </a>
                     </Tooltip>
                     {rootAdmin && (
