@@ -268,6 +268,28 @@ app.post('/api/leave-group', async (req, res) => {
     return res.json({ success: false, message: 'Bot offline atau tidak ada groupId' });
 });
 
+app.post('/api/send-message', async (req, res) => {
+    const { number, message } = req.body;
+    if (!sock || !sock.authState.creds.registered) {
+        return res.json({ success: false, message: 'Bot is offline or not registered.' });
+    }
+    if (!number || !message) {
+        return res.json({ success: false, message: 'Number and message are required.' });
+    }
+
+    try {
+        const [result] = await sock.onWhatsApp(number);
+        if (result && result.exists) {
+            await sock.sendMessage(result.jid, { text: message });
+            return res.json({ success: true, message: 'Message sent successfully.' });
+        } else {
+            return res.json({ success: false, message: 'WhatsApp number not found/registered on WA.' });
+        }
+    } catch (e) {
+        return res.json({ success: false, message: e.message });
+    }
+});
+
 const PORT = 3001;
 app.listen(PORT, () => {
     console.log(`WhatsApp Bot Service running on port ${PORT}`);

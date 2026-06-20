@@ -7,16 +7,19 @@ use Pterodactyl\Http\Controllers\Controller;
 use Pterodactyl\Models\StoreOrder;
 use Pterodactyl\Contracts\Repository\SettingsRepositoryInterface;
 use Pterodactyl\Services\Servers\ServerCreationService;
+use Pterodactyl\Services\WhatsApp\WhatsAppNotifierService;
 
 class TransaksikitaController extends Controller
 {
     private $settings;
     private $serverCreationService;
+    private $whatsAppNotifier;
 
-    public function __construct(SettingsRepositoryInterface $settings, ServerCreationService $serverCreationService)
+    public function __construct(SettingsRepositoryInterface $settings, ServerCreationService $serverCreationService, WhatsAppNotifierService $whatsAppNotifier)
     {
         $this->settings = $settings;
         $this->serverCreationService = $serverCreationService;
+        $this->whatsAppNotifier = $whatsAppNotifier;
     }
 
     /**
@@ -81,6 +84,14 @@ class TransaksikitaController extends Controller
 
                 $order->server_id = $server->id;
                 $order->save();
+
+                // Send WhatsApp notification
+                $user = \Pterodactyl\Models\User::find($order->user_id);
+                if ($user) {
+                    $duration = $order->data['store_duration_months'] ?? 1;
+                    $message = "🎉 *PEMBELIAN BERHASIL*\n\nHalo {$user->name_first}!\nServer Minecraft Anda ({$server->name}) durasi {$duration} Bulan telah berhasil dibuat.\n\nSilakan cek panel untuk login dan mengelola server Anda.";
+                    $this->whatsAppNotifier->send($user, $message);
+                }
             } catch (\Exception $e) {
                 \Log::error('Failed to provision server for Order ' . $order->id . ': ' . $e->getMessage());
             }
@@ -100,6 +111,13 @@ class TransaksikitaController extends Controller
                 }
                 
                 $server->save();
+
+                // Send WhatsApp notification
+                $user = \Pterodactyl\Models\User::find($order->user_id);
+                if ($user) {
+                    $message = "✅ *PERPANJANGAN BERHASIL*\n\nHalo {$user->name_first}!\nServer Anda ({$server->name}) berhasil diperpanjang selama {$duration} Bulan.\n\nTerima kasih telah menggunakan layanan kami.";
+                    $this->whatsAppNotifier->send($user, $message);
+                }
             }
         }
 

@@ -11,13 +11,15 @@ use Pterodactyl\Models\StoreOrder;
 use Pterodactyl\Models\StoreDiscount;
 use Pterodactyl\Contracts\Repository\SettingsRepositoryInterface;
 use Pterodactyl\Services\Deployment\AllocationSelectionService;
+use Pterodactyl\Services\WhatsApp\WhatsAppNotifierService;
 use Illuminate\Support\Str;
 
 class StoreController extends ClientApiController
 {
     public function __construct(
         private SettingsRepositoryInterface $settings,
-        private AllocationSelectionService $allocationSelectionService
+        private AllocationSelectionService $allocationSelectionService,
+        private WhatsAppNotifierService $whatsAppNotifier
     ) {
         parent::__construct();
     }
@@ -244,6 +246,11 @@ class StoreController extends ClientApiController
 
                 $order->server_id = $server->id;
                 $order->save();
+
+                // Send WhatsApp notification
+                $duration = $validated['duration'] ?? 1;
+                $message = "🎉 *PEMBELIAN BERHASIL (GRATIS)*\n\nHalo {$user->name_first}!\nServer Minecraft Anda ({$server->name}) durasi {$duration} Bulan telah berhasil dibuat.\n\nSilakan cek panel untuk login dan mengelola server Anda.";
+                $this->whatsAppNotifier->send($user, $message);
             } catch (\Exception $e) {
                 \Log::error('Failed to provision free server: ' . $e->getMessage());
             }
@@ -352,6 +359,11 @@ class StoreController extends ClientApiController
                 $server->status = null;
             }
             $server->save();
+
+            // Send WhatsApp notification
+            $duration = $validated['duration'] ?? 1;
+            $message = "✅ *PERPANJANGAN BERHASIL (GRATIS)*\n\nHalo {$user->name_first}!\nServer Anda ({$server->name}) berhasil diperpanjang selama {$duration} Bulan.\n\nTerima kasih telah menggunakan layanan kami.";
+            $this->whatsAppNotifier->send($user, $message);
 
             return response()->json([
                 'success' => true,
