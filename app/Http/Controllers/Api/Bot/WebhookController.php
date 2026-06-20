@@ -173,7 +173,7 @@ class WebhookController extends Controller
         // BOT OWNER COMMANDS
         // =====================================
 
-        if (in_array($command, ['menuowner', 'creatediscount', 'join', 'info', 'broadcast', 'restartbot'])) {
+        if (in_array($command, ['menuowner', 'creatediscount', 'join', 'setgroup', 'info', 'broadcast', 'restartbot'])) {
             if (!$isOwner) {
                 return response()->json(['reply' => "❌ Anda tidak memiliki izin untuk menggunakan perintah ini."]);
             }
@@ -182,6 +182,7 @@ class WebhookController extends Controller
                 $reply = "👑 *MENU OWNER BOT*\n\n" .
                          "• `creatediscount <code> <percent> <max_uses>` - Buat diskon store\n" .
                          "• `join <link_grup>` - Memasukkan bot ke grup (maksimal 1 grup)\n" .
+                         "• `setgroup` - (Gunakan di DALAM grup) Menjadikan grup tersebut sebagai grup utama bot\n" .
                          "• `info` - Lihat status panel (User, Server, Node)\n" .
                          "• `broadcast <pesan>` - Kirim pesan massal ke seluruh user\n" .
                          "• `restartbot` - Me-restart layanan PM2 bot\n";
@@ -224,12 +225,25 @@ class WebhookController extends Controller
 
                 $inviteCode = explode('chat.whatsapp.com/', $target)[1];
                 $inviteCode = explode(' ', $inviteCode)[0]; // get the code only
+                $inviteCode = trim($inviteCode);
 
                 return response()->json([
                     'reply' => "⏳ Sedang memproses untuk masuk ke grup...",
                     'action' => 'join_group',
                     'invite_code' => $inviteCode
                 ]);
+            }
+
+            if ($command === 'setgroup') {
+                $remoteJid = $request->input('remoteJid', '');
+                if (!str_contains($remoteJid, '@g.us')) {
+                    return response()->json(['reply' => "⚠️ Perintah ini harus dikirimkan dari dalam Grup, bukan dari Chat Pribadi (DM)."]);
+                }
+
+                $this->settings->set('wa_bot:group_jid', $remoteJid);
+                $this->settings->set('wa_bot:group_name', 'Manual WhatsApp Group');
+
+                return response()->json(['reply' => "✅ Grup ini berhasil diatur sebagai grup utama bot! Notifikasi Store dan Server akan dikirimkan ke grup ini."]);
             }
 
             if ($command === 'info') {
