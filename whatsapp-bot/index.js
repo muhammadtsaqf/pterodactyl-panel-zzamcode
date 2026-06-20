@@ -100,6 +100,9 @@ async function startBot(targetNumber) {
         if (!text) return;
 
         console.log(`[MESSAGE] Incoming from Raw: ${msg.key.remoteJid} | Participant: ${msg.key.participant} | Parsed Sender: ${sender}`);
+        if (msg.key.remoteJid.includes('@lid') || (msg.key.participant && msg.key.participant.includes('@lid'))) {
+            console.log("[DEBUG LID] Full Message Payload:", JSON.stringify(msg, null, 2));
+        }
 
         try {
             // Forward to Pterodactyl Laravel Webhook
