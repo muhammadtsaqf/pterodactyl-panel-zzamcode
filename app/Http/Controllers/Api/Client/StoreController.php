@@ -144,7 +144,7 @@ class StoreController extends ClientApiController
             'databases' => 'required|integer|min:0',
             'backups' => 'required|integer|min:0',
             'ports' => 'required|integer|min:0',
-            'duration' => 'required|integer|in:1,3,12',
+            'duration' => 'required|in:7days,1,3,12',
             'discount_code' => 'nullable|string',
         ]);
 
@@ -166,7 +166,8 @@ class StoreController extends ClientApiController
         $monthlyCost += $validated['backups'] * $priceBackup;
         $monthlyCost += $validated['ports'] * $pricePort;
 
-        $originalTotalCost = $monthlyCost * $validated['duration'];
+        $multiplier = $validated['duration'] === '7days' ? (7 / 30) : (int)$validated['duration'];
+        $originalTotalCost = round($monthlyCost * $multiplier);
         $totalCost = $originalTotalCost;
 
         $discountModel = null;
@@ -212,8 +213,8 @@ class StoreController extends ClientApiController
             'image' => $egg->docker_images[0] ?? $egg->docker_image ?? 'ghcr.io/pterodactyl/yolks:java_17',
             'startup' => $egg->startup,
             'start_on_completion' => true,
-            'store_duration_months' => $validated['duration'], // passed to webhook
-            'store_renewal_cost' => $originalTotalCost, // Normal cost for future renewals
+            'store_duration_value' => $validated['duration'], // passed to webhook
+            'store_renewal_cost' => $monthlyCost, // We store the base MONTHLY cost for future renewals
         ];
 
         $referenceId = 'STORE-' . $user->id . '-' . time() . '-' . Str::random(5);
@@ -239,17 +240,23 @@ class StoreController extends ClientApiController
                 $serverCreationService = app(\Pterodactyl\Services\Servers\ServerCreationService::class);
                 $server = $serverCreationService->handle($data);
                 
-                $server->store_renewal_cost = $originalTotalCost;
-                $server->store_renewal_duration = $validated['duration'];
-                $server->store_expires_at = now()->addMonths($validated['duration']);
+                $server->store_renewal_cost = $monthlyCost;
+                $server->store_renewal_duration = 1;
+                
+                if ($validated['duration'] === '7days') {
+                    $server->store_expires_at = now()->addDays(7);
+                } else {
+                    $server->store_expires_at = now()->addMonths((int)$validated['duration']);
+                }
                 $server->save();
 
                 $order->server_id = $server->id;
                 $order->save();
 
                 // Send WhatsApp notification
-                $duration = $validated['duration'] ?? 1;
-                $message = "🎉 *PEMBELIAN BERHASIL (GRATIS)*\n\nHalo {$user->name_first}!\nServer Minecraft Anda ({$server->name}) durasi {$duration} Bulan telah berhasil dibuat.\n\nSilakan cek panel untuk login dan mengelola server Anda.";
+                $durationValue = $validated['duration'] ?? 1;
+                $durationLabel = $durationValue === '7days' ? '7 Hari' : $durationValue . ' Bulan';
+                $message = "🎉 *PEMBELIAN BERHASIL (GRATIS)*\n\nHalo {$user->name_first}!\nServer Minecraft Anda ({$server->name}) durasi {$durationLabel} telah berhasil dibuat.\n\nSilakan cek panel untuk login dan mengelola server Anda.";
                 $this->whatsAppNotifier->send($user, $message);
             } catch (\Exception $e) {
                 \Log::error('Failed to provision free server: ' . $e->getMessage());
@@ -265,7 +272,8 @@ class StoreController extends ClientApiController
         }
 
         try {
-            $paymentId = $this->generatePayment($user, $totalCost, $referenceId, 'Purchase Server (' . $validated['duration'] . ' Months)');
+            $durationLabel = $validated['duration'] === '7days' ? '7 Days' : $validated['duration'] . ' Months';
+            $paymentId = $this->generatePayment($user, $totalCost, $referenceId, 'Purchase Server (' . $durationLabel . ')');
 
             StoreOrder::create([
                 'user_id' => $user->id,
@@ -303,7 +311,7 @@ class StoreController extends ClientApiController
         }
 
         $validated = $request->validate([
-            'duration' => 'required|integer|in:1,3,12',
+            'duration' => 'required|in:7days,1,3,12',
             'discount_code' => 'nullable|string',
         ]);
 
@@ -317,7 +325,8 @@ class StoreController extends ClientApiController
 
         // Base renewal cost is the original monthly cost
         $originalMonthlyCost = $server->store_renewal_cost / ($server->store_renewal_duration ?: 1);
-        $totalCost = $originalMonthlyCost * $validated['duration'];
+        $multiplier = $validated['duration'] === '7days' ? (7 / 30) : (int)$validated['duration'];
+        $totalCost = round($originalMonthlyCost * $multiplier);
 
         $discountModel = null;
         if (!empty($validated['discount_code'])) {
@@ -349,10 +358,13 @@ class StoreController extends ClientApiController
                 $discountModel->increment('uses');
             }
 
+            $addMethod = $validated['duration'] === '7days' ? 'addDays' : 'addMonths';
+            $addValue = $validated['duration'] === '7days' ? 7 : (int)$validated['duration'];
+
             if ($server->store_expires_at && $server->store_expires_at->isFuture()) {
-                $server->store_expires_at = $server->store_expires_at->addMonths($validated['duration']);
+                $server->store_expires_at = $server->store_expires_at->$addMethod($addValue);
             } else {
-                $server->store_expires_at = now()->addMonths($validated['duration']);
+                $server->store_expires_at = now()->$addMethod($addValue);
             }
 
             if ($server->status === Server::STATUS_SUSPENDED) {
@@ -361,8 +373,9 @@ class StoreController extends ClientApiController
             $server->save();
 
             // Send WhatsApp notification
-            $duration = $validated['duration'] ?? 1;
-            $message = "✅ *PERPANJANGAN BERHASIL (GRATIS)*\n\nHalo {$user->name_first}!\nServer Anda ({$server->name}) berhasil diperpanjang selama {$duration} Bulan.\n\nTerima kasih telah menggunakan layanan kami.";
+            $durationValue = $validated['duration'] ?? 1;
+            $durationLabel = $durationValue === '7days' ? '7 Hari' : $durationValue . ' Bulan';
+            $message = "✅ *PERPANJANGAN BERHASIL (GRATIS)*\n\nHalo {$user->name_first}!\nServer Anda ({$server->name}) berhasil diperpanjang selama {$durationLabel}.\n\nTerima kasih telah menggunakan layanan kami.";
             $this->whatsAppNotifier->send($user, $message);
 
             return response()->json([
@@ -375,7 +388,8 @@ class StoreController extends ClientApiController
         }
 
         try {
-            $paymentId = $this->generatePayment($user, $totalCost, $referenceId, 'Renew Server ' . $server->uuidShort . ' (' . $validated['duration'] . ' Months)');
+            $durationLabel = $validated['duration'] === '7days' ? '7 Days' : $validated['duration'] . ' Months';
+            $paymentId = $this->generatePayment($user, $totalCost, $referenceId, 'Renew Server ' . $server->uuidShort . ' (' . $durationLabel . ')');
 
             StoreOrder::create([
                 'user_id' => $user->id,

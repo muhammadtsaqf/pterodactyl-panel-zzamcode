@@ -122,7 +122,7 @@ export default () => {
     const [backups, setBackups] = useState(1);
     const [ports, setPorts] = useState(1);
     const [eggId, setEggId] = useState(0);
-    const [duration, setDuration] = useState(1);
+    const [duration, setDuration] = useState<number | string>(1);
 
     // Renew State
     const [selectedServerId, setSelectedServerId] = useState<string>('');
@@ -203,7 +203,8 @@ export default () => {
         total += backups * info.prices.backup;
         total += ports * info.prices.port;
         
-        return total * duration;
+        const multiplier = duration === '7days' ? (7 / 30) : (duration as number);
+        return total * multiplier;
     };
 
     const calculateRenewTotal = () => {
@@ -212,7 +213,8 @@ export default () => {
         if (!server || !server.storeRenewalCost || !server.storeRenewalDuration) return 0;
         
         const originalMonthlyCost = server.storeRenewalCost / server.storeRenewalDuration;
-        return originalMonthlyCost * duration;
+        const multiplier = duration === '7days' ? (7 / 30) : (duration as number);
+        return originalMonthlyCost * multiplier;
     };
 
     const rawTotalCost = activeTab === 'new' ? calculateNewTotal() : calculateRenewTotal();
@@ -455,7 +457,8 @@ export default () => {
                             <h3 className="text-xl font-semibold mb-4 text-neutral-200 border-b border-neutral-700 pb-2">
                                 <FontAwesomeIcon icon={faCalendarAlt} className="mr-2 text-pink-400" /> Billing Cycle
                             </h3>
-                            <SelectBox value={duration} onChange={(e) => setDuration(Number(e.target.value))}>
+                            <SelectBox value={duration} onChange={(e) => setDuration(e.target.value === '7days' ? '7days' : Number(e.target.value))}>
+                                <option value={'7days'}>7 Hari</option>
                                 <option value={1}>1 Bulan</option>
                                 <option value={3}>3 Bulan</option>
                                 <option value={12}>1 Tahun (12 Bulan)</option>
@@ -489,8 +492,8 @@ export default () => {
                             
                             <div className="space-y-3 mb-6">
                                 <div className="flex justify-between text-sm text-neutral-300">
-                                    <span>Harga Normal ({duration} Bulan)</span>
-                                    <span>Rp {rawTotalCost.toLocaleString()}</span>
+                                    <span>Harga Normal ({duration === '7days' ? '7 Hari' : `${duration} Bulan`})</span>
+                                    <span>Rp {Math.round(rawTotalCost).toLocaleString()}</span>
                                 </div>
                                 {appliedDiscount && (
                                     <div className="flex justify-between text-sm text-green-400 font-medium">

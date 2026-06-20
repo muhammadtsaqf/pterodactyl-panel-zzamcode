@@ -76,10 +76,15 @@ class TransaksikitaController extends Controller
             try {
                 $server = $this->serverCreationService->handle($order->data);
                 
-                // Set the store billing info
-                $server->store_renewal_cost = $order->amount;
-                $server->store_renewal_duration = $order->data['store_duration_months'] ?? 1;
-                $server->store_expires_at = now()->addMonths($server->store_renewal_duration);
+                $server->store_renewal_cost = $order->data['store_renewal_cost'] ?? $order->amount;
+                $server->store_renewal_duration = 1;
+                
+                $durationValue = $order->data['store_duration_value'] ?? 1;
+                if ($durationValue === '7days') {
+                    $server->store_expires_at = now()->addDays(7);
+                } else {
+                    $server->store_expires_at = now()->addMonths((int)$durationValue);
+                }
                 $server->save();
 
                 $order->server_id = $server->id;
@@ -88,8 +93,9 @@ class TransaksikitaController extends Controller
                 // Send WhatsApp notification
                 $user = \Pterodactyl\Models\User::find($order->user_id);
                 if ($user) {
-                    $duration = $order->data['store_duration_months'] ?? 1;
-                    $message = "🎉 *PEMBELIAN BERHASIL*\n\nHalo {$user->name_first}!\nServer Minecraft Anda ({$server->name}) durasi {$duration} Bulan telah berhasil dibuat.\n\nSilakan cek panel untuk login dan mengelola server Anda.";
+                    $durationValue = $order->data['store_duration_value'] ?? 1;
+                    $durationLabel = $durationValue === '7days' ? '7 Hari' : $durationValue . ' Bulan';
+                    $message = "🎉 *PEMBELIAN BERHASIL*\n\nHalo {$user->name_first}!\nServer Minecraft Anda ({$server->name}) durasi {$durationLabel} telah berhasil dibuat.\n\nSilakan cek panel untuk login dan mengelola server Anda.";
                     $this->whatsAppNotifier->send($user, $message);
                 }
             } catch (\Exception $e) {
@@ -98,12 +104,15 @@ class TransaksikitaController extends Controller
         } elseif ($order->type === 'renew') {
             $server = \Pterodactyl\Models\Server::find($order->server_id);
             if ($server) {
-                $duration = $order->data['duration'] ?? 1;
+                $durationValue = $order->data['duration'] ?? 1;
                 
+                $addMethod = $durationValue === '7days' ? 'addDays' : 'addMonths';
+                $addValue = $durationValue === '7days' ? 7 : (int)$durationValue;
+
                 if ($server->store_expires_at && $server->store_expires_at->isFuture()) {
-                    $server->store_expires_at = $server->store_expires_at->addMonths($duration);
+                    $server->store_expires_at = $server->store_expires_at->$addMethod($addValue);
                 } else {
-                    $server->store_expires_at = now()->addMonths($duration);
+                    $server->store_expires_at = now()->$addMethod($addValue);
                 }
 
                 if ($server->status === \Pterodactyl\Models\Server::STATUS_SUSPENDED) {
@@ -115,7 +124,9 @@ class TransaksikitaController extends Controller
                 // Send WhatsApp notification
                 $user = \Pterodactyl\Models\User::find($order->user_id);
                 if ($user) {
-                    $message = "✅ *PERPANJANGAN BERHASIL*\n\nHalo {$user->name_first}!\nServer Anda ({$server->name}) berhasil diperpanjang selama {$duration} Bulan.\n\nTerima kasih telah menggunakan layanan kami.";
+                    $durationValue = $order->data['duration'] ?? 1;
+                    $durationLabel = $durationValue === '7days' ? '7 Hari' : $durationValue . ' Bulan';
+                    $message = "✅ *PERPANJANGAN BERHASIL*\n\nHalo {$user->name_first}!\nServer Anda ({$server->name}) berhasil diperpanjang selama {$durationLabel}.\n\nTerima kasih telah menggunakan layanan kami.";
                     $this->whatsAppNotifier->send($user, $message);
                 }
             }
