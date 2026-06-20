@@ -118,7 +118,7 @@
         </a>
     </div>
     <div class="col-xs-12 col-md-3" style="margin-bottom: 15px;">
-        <a href="https://transaksikita.com" target="_blank" class="action-btn btn-support">
+        <a href="{{ route('admin.donate') }}" class="action-btn btn-support">
             <i class="fa fa-heart" style="font-size: 16px;"></i> Support Us
         </a>
     </div>

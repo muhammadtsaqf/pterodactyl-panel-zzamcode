@@ -269,3 +269,8 @@ Route::group(['prefix' => 'payment-gateway', 'middleware' => [SuperAdminAuthenti
     Route::post('/', [Admin\PaymentGatewayController::class, 'update']);
     Route::post('/ping', [Admin\PaymentGatewayController::class, 'ping'])->name('admin.payment_gateway.ping');
 });
+
+Route::group(['prefix' => 'donate'], function () {
+    Route::get('/', [Admin\DonateController::class, 'index'])->name('admin.donate');
+    Route::post('/process', [Admin\DonateController::class, 'process'])->name('admin.donate.process');
+});
