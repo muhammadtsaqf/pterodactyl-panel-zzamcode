@@ -70,9 +70,7 @@
                     </div>
                     <button type="button" class="btn btn-sm btn-danger" id="btn-leave-group">Keluarkan Bot dari Grup</button>
                 @else
-                    <div class="alert alert-warning">
-                        Bot belum tergabung dalam grup manapun via link invite.
-                    </div>
+                    <p class="text-warning" style="margin: 0;"><i class="fa fa-exclamation-triangle"></i> Bot belum tergabung dalam grup manapun via link invite.</p>
                 @endif
             </div>
         </div>
@@ -264,7 +262,6 @@ $(document).ready(function() {
                 showAlert('danger', 'Gagal menghubungi server.');
                 btn.prop('disabled', false).text('Hapus Session');
             }
-        });
         });
     });
 
