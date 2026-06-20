@@ -61,47 +61,19 @@
 
         <div class="settings-card">
             <div class="settings-card-header">
-                <div class="icon-wrap" style="background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(37,99,235,0.2)); color: #93c5fd;">
-                    <i class="fa fa-money"></i>
+                <div class="icon-wrap" style="background: linear-gradient(135deg, #a855f7, #9333ea); color: #e9d5ff;">
+                    <i class="fa fa-cubes"></i>
                 </div>
                 <div>
-                    <h3>Resource Pricing</h3>
-                    <p>Set the price in your currency (e.g. IDR) for each resource unit</p>
+                    <h3>Store Packages</h3>
+                    <p>Manage the predefined packages that users can purchase.</p>
                 </div>
             </div>
-            <div class="settings-card-body">
-                <div class="settings-grid-3">
-                    <div class="settings-field">
-                        <label>CPU Price (per 10%)</label>
-                        <input type="number" required class="form-control" name="store:price:cpu" value="{{ old('store:price:cpu', config('store.price.cpu', 1000)) }}">
-                        <div class="field-hint">Price for every 10% of CPU limit.</div>
-                    </div>
-                    <div class="settings-field">
-                        <label>RAM Price (per 1GB)</label>
-                        <input type="number" required class="form-control" name="store:price:ram" value="{{ old('store:price:ram', config('store.price.ram', 5000)) }}">
-                        <div class="field-hint">Price for every 1024MB (1GB) of RAM.</div>
-                    </div>
-                    <div class="settings-field">
-                        <label>Disk Price (per 1GB)</label>
-                        <input type="number" required class="form-control" name="store:price:disk" value="{{ old('store:price:disk', config('store.price.disk', 2000)) }}">
-                        <div class="field-hint">Price for every 1024MB (1GB) of Disk space.</div>
-                    </div>
-                    <div class="settings-field">
-                        <label>Database Price (per 1 db)</label>
-                        <input type="number" required class="form-control" name="store:price:database" value="{{ old('store:price:database', config('store.price.database', 1000)) }}">
-                        <div class="field-hint">Price for each additional database allocation.</div>
-                    </div>
-                    <div class="settings-field">
-                        <label>Backup Price (per 1 backup)</label>
-                        <input type="number" required class="form-control" name="store:price:backup" value="{{ old('store:price:backup', config('store.price.backup', 1000)) }}">
-                        <div class="field-hint">Price for each additional backup limit.</div>
-                    </div>
-                    <div class="settings-field">
-                        <label>Allocation/Port Price (per 1 port)</label>
-                        <input type="number" required class="form-control" name="store:price:port" value="{{ old('store:price:port', config('store.price.port', 500)) }}">
-                        <div class="field-hint">Price for each additional network allocation (port).</div>
-                    </div>
-                </div>
+            <div class="settings-card-body" style="padding: 20px;">
+                <a href="{{ route('admin.store.packages') }}" class="btn btn-primary" style="background: #9333ea; border: none; padding: 10px 20px; font-weight: bold;">
+                    <i class="fa fa-list"></i> Manage Packages
+                </a>
+                <p style="margin-top: 10px; color: #a1a1aa;">The old resource pricing has been replaced by the new Package-Based system.</p>
             </div>
         </div>
 

@@ -95,7 +95,16 @@ class TransaksikitaController extends Controller
                 if ($user && $user->phone) {
                     $expiredFormatted = $server->store_expires_at ? \Carbon\Carbon::parse($server->store_expires_at)->translatedFormat('d F Y') : 'Permanen';
                     $price = 'Rp ' . number_format($order->amount, 0, ',', '.');
-                    $paket = $server->egg->name ?? 'Custom';
+                    
+                    $paket = 'Custom';
+                    if (isset($order->data['store_package_id'])) {
+                        $storePackage = \Pterodactyl\Models\StorePackage::find($order->data['store_package_id']);
+                        if ($storePackage) {
+                            $paket = $storePackage->name;
+                        }
+                    } elseif (isset($server->egg->name)) {
+                        $paket = $server->egg->name;
+                    }
                     
                     $phoneFormatted = $this->whatsAppNotifier->formatPhoneNumber($user->phone);
 

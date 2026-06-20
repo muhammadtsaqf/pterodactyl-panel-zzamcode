@@ -7,7 +7,7 @@ import useFlash from '@/plugins/useFlash';
 import Button from '@/components/elements/Button';
 import Spinner from '@/components/elements/Spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMicrochip, faMemory, faHdd, faDatabase, faArchive, faNetworkWired, faShoppingCart, faServer, faCalendarAlt, faPlus, faSyncAlt, faTag } from '@fortawesome/free-solid-svg-icons';
+import { faMicrochip, faMemory, faHdd, faDatabase, faArchive, faNetworkWired, faShoppingCart, faServer, faCalendarAlt, faPlus, faSyncAlt, faTag, faCheckCircle, faCube } from '@fortawesome/free-solid-svg-icons';
 import Input from '@/components/elements/Input';
 import useSWR from 'swr';
 import getServers from '@/api/getServers';
@@ -47,6 +47,18 @@ const GlassCard = styled.div`
     }
 `;
 
+const PackageCard = styled.div<{ $selected: boolean }>`
+    ${tw`relative rounded-2xl p-6 cursor-pointer transition-all duration-300 border-2`};
+    background: ${props => props.$selected ? 'rgba(79, 70, 229, 0.1)' : 'rgba(30, 41, 59, 0.5)'};
+    border-color: ${props => props.$selected ? '#6366f1' : 'rgba(255, 255, 255, 0.05)'};
+    
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+        border-color: ${props => props.$selected ? '#6366f1' : 'rgba(255, 255, 255, 0.1)'};
+    }
+`;
+
 const Header = styled.h1`
     ${tw`text-3xl font-bold text-neutral-100 mb-2`};
     font-family: 'Inter', sans-serif;
@@ -61,19 +73,6 @@ const Grid = styled.div`
     ${tw`grid grid-cols-1 lg:grid-cols-3 gap-8`};
 `;
 
-const SliderGroup = styled.div`
-    ${tw`mb-6`};
-    
-    label {
-        ${tw`flex justify-between items-center mb-2 text-sm font-medium text-neutral-300`};
-    }
-    
-    input[type="range"] {
-        ${tw`w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer`};
-        accent-color: #6366f1;
-    }
-`;
-
 const SelectBox = styled.select`
     ${tw`w-full bg-neutral-900 border border-neutral-700 text-neutral-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all`};
 `;
@@ -85,25 +84,23 @@ const TabButton = styled.button<{ $active: boolean }>`
         : tw`bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-neutral-200`};
 `;
 
+interface StorePackage {
+    id: number;
+    name: string;
+    description: string;
+    price: number;
+    cpu: number;
+    memory: number;
+    disk: number;
+    databases: number;
+    backups: number;
+    ports: number;
+    egg_name: string;
+}
+
 interface StoreInfo {
     enabled: boolean;
-    prices: {
-        cpu: number;
-        ram: number;
-        disk: number;
-        database: number;
-        backup: number;
-        port: number;
-    };
-    nests: {
-        id: number;
-        name: string;
-        eggs: {
-            id: number;
-            name: string;
-            description: string;
-        }[];
-    }[];
+    packages: StorePackage[];
 }
 
 export default () => {
@@ -115,13 +112,7 @@ export default () => {
 
     // New Order State
     const [serverName, setServerName] = useState('');
-    const [cpu, setCpu] = useState(100);
-    const [ram, setRam] = useState(1024);
-    const [disk, setDisk] = useState(1024);
-    const [databases, setDatabases] = useState(1);
-    const [backups, setBackups] = useState(1);
-    const [ports, setPorts] = useState(1);
-    const [eggId, setEggId] = useState(0);
+    const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
     const [duration, setDuration] = useState<number | string>(1);
 
     // Renew State
@@ -138,8 +129,8 @@ export default () => {
         http.get('/api/client/store/info')
             .then(({ data }) => {
                 setInfo(data);
-                if (data.nests.length > 0 && data.nests[0].eggs.length > 0) {
-                    setEggId(data.nests[0].eggs[0].id);
+                if (data.packages && data.packages.length > 0) {
+                    setSelectedPackageId(data.packages[0].id);
                 }
                 setLoading(false);
             })
@@ -195,16 +186,12 @@ export default () => {
     }
 
     const calculateNewTotal = () => {
-        let total = 0;
-        total += (cpu / 10) * info.prices.cpu;
-        total += (ram / 1024) * info.prices.ram;
-        total += (disk / 1024) * info.prices.disk;
-        total += databases * info.prices.database;
-        total += backups * info.prices.backup;
-        total += ports * info.prices.port;
+        if (!selectedPackageId) return 0;
+        const pkg = info.packages.find(p => p.id === selectedPackageId);
+        if (!pkg) return 0;
         
         const multiplier = duration === '7days' ? (7 / 30) : (duration as number);
-        return total * multiplier;
+        return pkg.price * multiplier;
     };
 
     const calculateRenewTotal = () => {
@@ -229,13 +216,7 @@ export default () => {
         const endpoint = activeTab === 'new' ? '/api/client/store/purchase' : `/api/client/store/renew/${selectedServerId}`;
         const payload = activeTab === 'new' ? {
             name: serverName || 'My Server',
-            egg_id: eggId,
-            cpu,
-            ram,
-            disk,
-            databases,
-            backups,
-            ports,
+            package_id: selectedPackageId,
             duration,
             discount_code: appliedDiscount?.code
         } : {
@@ -244,7 +225,13 @@ export default () => {
         };
 
         if (activeTab === 'new' && (!serverName || serverName.length < 3)) {
-            addFlash({ type: 'error', key: 'store', message: 'Please enter a valid server name.' });
+            addFlash({ type: 'error', key: 'store', message: 'Please enter a valid server name (min 3 chars).' });
+            setSubmitting(false);
+            return;
+        }
+
+        if (activeTab === 'new' && !selectedPackageId) {
+            addFlash({ type: 'error', key: 'store', message: 'Please select a package.' });
             setSubmitting(false);
             return;
         }
@@ -346,89 +333,66 @@ export default () => {
                                     <h3 className="text-xl font-semibold mb-6 text-neutral-200 border-b border-neutral-700 pb-2">
                                         <FontAwesomeIcon icon={faServer} className="mr-2 text-indigo-400" /> Detail Server
                                     </h3>
-                                    <div className="mb-6">
+                                    <div>
                                         <label className="block mb-2 text-sm font-medium text-neutral-300">Nama Server</label>
                                         <Input 
                                             value={serverName} 
                                             onChange={e => setServerName(e.target.value)} 
-                                            placeholder="Contoh: SMP Server" 
+                                            placeholder="Contoh: SMP Survival" 
                                             className="w-full"
                                         />
                                     </div>
-                                    <div className="mb-6">
-                                        <label className="block mb-2 text-sm font-medium text-neutral-300">Server Type</label>
-                                        <SelectBox value={eggId} onChange={(e) => setEggId(Number(e.target.value))}>
-                                            {info.nests.map(nest => (
-                                                <optgroup key={nest.id} label={nest.name}>
-                                                    {nest.eggs.map(egg => (
-                                                        <option key={egg.id} value={egg.id}>{egg.name}</option>
-                                                    ))}
-                                                </optgroup>
-                                            ))}
-                                        </SelectBox>
-                                    </div>
                                 </GlassCard>
 
-                                <GlassCard>
-                                    <h3 className="text-xl font-semibold mb-6 text-neutral-200 border-b border-neutral-700 pb-2">
-                                        <FontAwesomeIcon icon={faMicrochip} className="mr-2 text-blue-400" /> Resource Configuration
-                                    </h3>
-                                    
-                                    <SliderGroup>
-                                        <label>
-                                            <span>CPU Limit</span>
-                                            <span className="text-indigo-400 font-bold">{cpu}%</span>
-                                        </label>
-                                        <input type="range" min="10" max="800" step="10" value={cpu} onChange={(e) => setCpu(Number(e.target.value))} />
-                                    </SliderGroup>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {info.packages.length > 0 ? info.packages.map(pkg => (
+                                        <PackageCard 
+                                            key={pkg.id} 
+                                            $selected={selectedPackageId === pkg.id}
+                                            onClick={() => setSelectedPackageId(pkg.id)}
+                                        >
+                                            {selectedPackageId === pkg.id && (
+                                                <div className="absolute top-4 right-4 text-indigo-400">
+                                                    <FontAwesomeIcon icon={faCheckCircle} className="text-xl" />
+                                                </div>
+                                            )}
+                                            <h3 className="text-2xl font-bold text-white mb-1">{pkg.name}</h3>
+                                            <p className="text-neutral-400 text-sm mb-4 h-10 overflow-hidden">{pkg.description}</p>
+                                            
+                                            <div className="mb-6">
+                                                <span className="text-3xl font-extrabold text-white">Rp {pkg.price.toLocaleString()}</span>
+                                                <span className="text-neutral-500 font-medium">/bln</span>
+                                            </div>
 
-                                    <SliderGroup>
-                                        <label>
-                                            <span>Memory (RAM)</span>
-                                            <span className="text-indigo-400 font-bold">{ram} MB</span>
-                                        </label>
-                                        <input type="range" min="512" max="16384" step="512" value={ram} onChange={(e) => setRam(Number(e.target.value))} />
-                                    </SliderGroup>
-
-                                    <SliderGroup>
-                                        <label>
-                                            <span>Disk Space</span>
-                                            <span className="text-indigo-400 font-bold">{disk} MB</span>
-                                        </label>
-                                        <input type="range" min="512" max="51200" step="512" value={disk} onChange={(e) => setDisk(Number(e.target.value))} />
-                                    </SliderGroup>
-                                </GlassCard>
-
-                                <GlassCard>
-                                    <h3 className="text-xl font-semibold mb-6 text-neutral-200 border-b border-neutral-700 pb-2">
-                                        <FontAwesomeIcon icon={faArchive} className="mr-2 text-orange-400" /> Additional Allocations
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <SliderGroup>
-                                            <label>
-                                                <span>Databases</span>
-                                                <span className="text-indigo-400 font-bold">{databases}</span>
-                                            </label>
-                                            <input type="range" min="0" max="10" step="1" value={databases} onChange={(e) => setDatabases(Number(e.target.value))} />
-                                        </SliderGroup>
-
-                                        <SliderGroup>
-                                            <label>
-                                                <span>Backups</span>
-                                                <span className="text-indigo-400 font-bold">{backups}</span>
-                                            </label>
-                                            <input type="range" min="0" max="10" step="1" value={backups} onChange={(e) => setBackups(Number(e.target.value))} />
-                                        </SliderGroup>
-
-                                        <SliderGroup>
-                                            <label>
-                                                <span>Extra Ports</span>
-                                                <span className="text-indigo-400 font-bold">{ports}</span>
-                                            </label>
-                                            <input type="range" min="0" max="5" step="1" value={ports} onChange={(e) => setPorts(Number(e.target.value))} />
-                                        </SliderGroup>
-                                    </div>
-                                </GlassCard>
+                                            <div className="space-y-3">
+                                                <div className="flex items-center text-sm text-neutral-300">
+                                                    <FontAwesomeIcon icon={faCube} className="w-5 text-neutral-500 mr-3" />
+                                                    Game: <strong className="ml-1 text-white">{pkg.egg_name}</strong>
+                                                </div>
+                                                <div className="flex items-center text-sm text-neutral-300">
+                                                    <FontAwesomeIcon icon={faMicrochip} className="w-5 text-neutral-500 mr-3" />
+                                                    {pkg.cpu}% CPU
+                                                </div>
+                                                <div className="flex items-center text-sm text-neutral-300">
+                                                    <FontAwesomeIcon icon={faMemory} className="w-5 text-neutral-500 mr-3" />
+                                                    {pkg.memory} MB RAM
+                                                </div>
+                                                <div className="flex items-center text-sm text-neutral-300">
+                                                    <FontAwesomeIcon icon={faHdd} className="w-5 text-neutral-500 mr-3" />
+                                                    {pkg.disk} MB Disk
+                                                </div>
+                                                <div className="flex items-center text-sm text-neutral-300">
+                                                    <FontAwesomeIcon icon={faDatabase} className="w-5 text-neutral-500 mr-3" />
+                                                    {pkg.databases} Databases
+                                                </div>
+                                            </div>
+                                        </PackageCard>
+                                    )) : (
+                                        <div className="col-span-full p-6 text-center text-neutral-400 bg-neutral-800/50 rounded-xl border border-neutral-700">
+                                            Tidak ada paket yang tersedia saat ini.
+                                        </div>
+                                    )}
+                                </div>
                             </>
                         ) : (
                             <GlassCard>
@@ -513,7 +477,7 @@ export default () => {
                                 size="large" 
                                 className="w-full flex items-center justify-center py-4 text-lg bg-gradient-to-r from-indigo-600 to-purple-600 border-0 hover:from-indigo-500 hover:to-purple-500 shadow-lg"
                                 onClick={handleCheckout}
-                                disabled={submitting || (activeTab === 'renew' && !selectedServerId) || (activeTab === 'new' && (!serverName || serverName.length < 3))}
+                                disabled={submitting || (activeTab === 'renew' && !selectedServerId) || (activeTab === 'new' && (!serverName || serverName.length < 3 || !selectedPackageId))}
                             >
                                 {submitting ? <Spinner size="small" /> : finalTotalCost === 0 ? 'Claim Free Server' : 'Checkout & Pay'}
                             </Button>

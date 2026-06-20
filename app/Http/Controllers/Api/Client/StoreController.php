@@ -27,33 +27,28 @@ class StoreController extends ClientApiController
     public function info()
     {
         $enabled = $this->settings->get('settings::store:enabled', 1) == 1;
-        $prices = [
-            'cpu' => (int)$this->settings->get('settings::store:price:cpu', 1000),
-            'ram' => (int)$this->settings->get('settings::store:price:ram', 5000),
-            'disk' => (int)$this->settings->get('settings::store:price:disk', 2000),
-            'database' => (int)$this->settings->get('settings::store:price:database', 1000),
-            'backup' => (int)$this->settings->get('settings::store:price:backup', 1000),
-            'port' => (int)$this->settings->get('settings::store:price:port', 500),
-        ];
-
-        $nests = Nest::with('eggs')->get()->map(function($nest) {
-            return [
-                'id' => $nest->id,
-                'name' => $nest->name,
-                'eggs' => $nest->eggs->map(function($egg) {
-                    return [
-                        'id' => $egg->id,
-                        'name' => $egg->name,
-                        'description' => $egg->description,
-                    ];
-                })->values()
-            ];
-        })->values();
+        $packages = \Pterodactyl\Models\StorePackage::where('is_active', true)
+                        ->with(['egg', 'node'])
+                        ->get()
+                        ->map(function ($pkg) {
+                            return [
+                                'id' => $pkg->id,
+                                'name' => $pkg->name,
+                                'description' => $pkg->description,
+                                'price' => $pkg->price,
+                                'cpu' => $pkg->cpu,
+                                'memory' => $pkg->memory,
+                                'disk' => $pkg->disk,
+                                'databases' => $pkg->databases,
+                                'backups' => $pkg->backups,
+                                'ports' => $pkg->ports,
+                                'egg_name' => $pkg->egg ? $pkg->egg->name : 'Unknown',
+                            ];
+                        })->values();
 
         return [
             'enabled' => $enabled,
-            'prices' => $prices,
-            'nests' => $nests,
+            'packages' => $packages,
         ];
     }
 
@@ -130,41 +125,27 @@ class StoreController extends ClientApiController
             return response()->json(['error' => 'Store is currently disabled.'], 403);
         }
 
-        $nodeId = $this->settings->get('settings::store:node_id');
-        if (!$nodeId) {
-            return response()->json(['error' => 'Store is not properly configured. No default node selected.'], 500);
-        }
-
         $validated = $request->validate([
             'name' => 'required|string|min:1|max:255',
-            'egg_id' => 'required|exists:eggs,id',
-            'cpu' => 'required|integer|min:10',
-            'ram' => 'required|integer|min:512',
-            'disk' => 'required|integer|min:512',
-            'databases' => 'required|integer|min:0',
-            'backups' => 'required|integer|min:0',
-            'ports' => 'required|integer|min:0',
+            'package_id' => 'required|exists:store_packages,id',
             'duration' => 'required|in:7days,1,3,12',
             'discount_code' => 'nullable|string',
         ]);
 
-        $egg = Egg::with('variables')->findOrFail($validated['egg_id']);
+        $package = \Pterodactyl\Models\StorePackage::where('is_active', true)->findOrFail($validated['package_id']);
+        
+        if (!$package->egg_id) {
+            return response()->json(['error' => 'This package is not properly configured (missing Egg). Please contact admin.'], 500);
+        }
 
-        $priceCpu = (int)$this->settings->get('settings::store:price:cpu', 1000);
-        $priceRam = (int)$this->settings->get('settings::store:price:ram', 5000);
-        $priceDisk = (int)$this->settings->get('settings::store:price:disk', 2000);
-        $priceDb = (int)$this->settings->get('settings::store:price:database', 1000);
-        $priceBackup = (int)$this->settings->get('settings::store:price:backup', 1000);
-        $pricePort = (int)$this->settings->get('settings::store:price:port', 500);
+        $nodeId = $package->node_id ?: $this->settings->get('settings::store:node_id');
+        if (!$nodeId) {
+            return response()->json(['error' => 'Store is not properly configured. No deployment node found.'], 500);
+        }
 
-        // Calculate total cost
-        $monthlyCost = 0;
-        $monthlyCost += ($validated['cpu'] / 10) * $priceCpu;
-        $monthlyCost += ($validated['ram'] / 1024) * $priceRam;
-        $monthlyCost += ($validated['disk'] / 1024) * $priceDisk;
-        $monthlyCost += $validated['databases'] * $priceDb;
-        $monthlyCost += $validated['backups'] * $priceBackup;
-        $monthlyCost += $validated['ports'] * $pricePort;
+        $egg = Egg::with('variables')->findOrFail($package->egg_id);
+
+        $monthlyCost = $package->price;
 
         $multiplier = $validated['duration'] === '7days' ? (7 / 30) : (int)$validated['duration'];
         $originalTotalCost = round($monthlyCost * $multiplier);
@@ -201,13 +182,13 @@ class StoreController extends ClientApiController
             'nest_id' => $egg->nest_id,
             'node_id' => $nodeId,
             'allocation_id' => $allocation->id,
-            'allocation_limit' => $validated['ports'] + 1,
-            'backup_limit' => $validated['backups'],
-            'database_limit' => $validated['databases'],
+            'allocation_limit' => $package->ports + 1,
+            'backup_limit' => $package->backups,
+            'database_limit' => $package->databases,
             'environment' => $environment,
-            'memory' => $validated['ram'],
-            'disk' => $validated['disk'],
-            'cpu' => $validated['cpu'],
+            'memory' => $package->memory,
+            'disk' => $package->disk,
+            'cpu' => $package->cpu,
             'swap' => 0,
             'io' => 500,
             'image' => (is_array($egg->docker_images) && count($egg->docker_images) > 0) ? array_values($egg->docker_images)[0] : ($egg->docker_image ?? 'ghcr.io/pterodactyl/yolks:java_17'),
@@ -215,6 +196,7 @@ class StoreController extends ClientApiController
             'start_on_completion' => true,
             'store_duration_value' => $validated['duration'], // passed to webhook
             'store_renewal_cost' => $monthlyCost, // We store the base MONTHLY cost for future renewals
+            'store_package_id' => $package->id,
         ];
 
         $referenceId = 'STORE-' . $user->id . '-' . time() . '-' . Str::random(5);
@@ -256,7 +238,12 @@ class StoreController extends ClientApiController
                 // Send WhatsApp notification
                 if ($user->phone) {
                     $expiredFormatted = $server->store_expires_at ? \Carbon\Carbon::parse($server->store_expires_at)->translatedFormat('d F Y') : 'Permanen';
-                    $paket = $server->egg->name ?? 'Custom';
+                    $paket = 'Custom';
+                    if (isset($package) && $package) {
+                        $paket = $package->name;
+                    } elseif (isset($server->egg->name)) {
+                        $paket = $server->egg->name;
+                    }
                     
                     $phoneFormatted = $this->whatsAppNotifier->formatPhoneNumber($user->phone);
 
