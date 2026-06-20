@@ -45,14 +45,12 @@ class UserController extends Controller
      */
     public function index(Request $request): View
     {
-        $users = QueryBuilder::for(
-            User::query()->select('users.*')
-                ->selectRaw('COUNT(DISTINCT(subusers.id)) as subuser_of_count')
-                ->selectRaw('COUNT(DISTINCT(servers.id)) as servers_count')
-                ->leftJoin('subusers', 'subusers.user_id', '=', 'users.id')
-                ->leftJoin('servers', 'servers.owner_id', '=', 'users.id')
-                ->leftJoin('servers', 'servers.owner_id', '=', 'users.id')
-                ->groupBy('users.id');
+        $query = User::query()->select('users.*')
+            ->selectRaw('COUNT(DISTINCT(subusers.id)) as subuser_of_count')
+            ->selectRaw('COUNT(DISTINCT(servers.id)) as servers_count')
+            ->leftJoin('subusers', 'subusers.user_id', '=', 'users.id')
+            ->leftJoin('servers', 'servers.owner_id', '=', 'users.id')
+            ->groupBy('users.id');
 
         if (!$request->user()->super_admin) {
             $query->where('users.super_admin', false);
