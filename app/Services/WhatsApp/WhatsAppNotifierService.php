@@ -51,10 +51,7 @@ class WhatsAppNotifierService
         }
     }
 
-    /**
-     * Send a WhatsApp message to the configured group (if any).
-     */
-    public function sendToGroup(string $message): bool
+    public function sendToGroup(string $message, array $mentions = []): bool
     {
         $settings = app(\Pterodactyl\Contracts\Repository\SettingsRepositoryInterface::class);
         $groupJid = $settings->get('wa_bot:group_jid', '');
@@ -67,6 +64,7 @@ class WhatsAppNotifierService
             $response = Http::timeout(5)->post("{$this->botUrl}/api/send-message", [
                 'number' => $groupJid,
                 'message' => $message,
+                'mentions' => $mentions,
             ]);
 
             $json = $response->json();
@@ -77,11 +75,35 @@ class WhatsAppNotifierService
         }
     }
 
+    public function addGroupParticipant(string $phone): bool
+    {
+        $settings = app(\Pterodactyl\Contracts\Repository\SettingsRepositoryInterface::class);
+        $groupJid = $settings->get('wa_bot:group_jid', '');
+
+        if ($groupJid === '') {
+            return false;
+        }
+
+        $cleanPhone = $this->formatPhoneNumber($phone);
+
+        try {
+            $response = Http::timeout(5)->post("{$this->botUrl}/api/add-participant", [
+                'groupId' => $groupJid,
+                'number' => $cleanPhone,
+            ]);
+
+            return $response->json('success') === true;
+        } catch (\Exception $e) {
+            \Log::error('WhatsApp Notifier Failed to add participant: ' . $e->getMessage());
+            return false;
+        }
+    }
+
 
     /**
      * Normalize the phone number format to standard WhatsApp format (e.g. 628...).
      */
-    private function formatPhoneNumber(string $phone): string
+    public function formatPhoneNumber(string $phone): string
     {
         // Remove all non-numeric characters
         $cleanPhone = preg_replace('/[^0-9]/', '', $phone);

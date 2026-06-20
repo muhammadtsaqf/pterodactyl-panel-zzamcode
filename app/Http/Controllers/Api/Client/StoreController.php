@@ -254,10 +254,23 @@ class StoreController extends ClientApiController
                 $order->save();
 
                 // Send WhatsApp notification
-                $durationValue = $validated['duration'] ?? 1;
-                $durationLabel = $durationValue === '7days' ? '7 Hari' : $durationValue . ' Bulan';
-                $message = "🎉 *PEMBELIAN BERHASIL (GRATIS)*\n\nHalo {$user->name_first}!\nServer Minecraft Anda ({$server->name}) durasi {$durationLabel} telah berhasil dibuat.\n\nSilakan cek panel untuk login dan mengelola server Anda.";
-                $this->whatsAppNotifier->send($user, $message);
+                if ($user->phone) {
+                    $expiredFormatted = $server->store_expires_at ? \Carbon\Carbon::parse($server->store_expires_at)->translatedFormat('d F Y') : 'Permanen';
+                    $paket = $server->egg->name ?? 'Custom';
+                    
+                    $phoneFormatted = $this->whatsAppNotifier->formatPhoneNumber($user->phone);
+
+                    $message = "✅ *ORDER SERVER BARU BERHASIL*\n\n" .
+                               "• Pembeli: @{$phoneFormatted}\n" .
+                               "• Paket: {$paket}\n" .
+                               "• Server: {$server->name}\n" .
+                               "• Expired: {$expiredFormatted}\n" .
+                               "• Harga: GRATIS\n\n" .
+                               "Terima kasih telah order di XMPanels!";
+                               
+                    $this->whatsAppNotifier->addGroupParticipant($user->phone);
+                    $this->whatsAppNotifier->sendToGroup($message, [$phoneFormatted . '@s.whatsapp.net']);
+                }
             } catch (\Exception $e) {
                 \Log::error('Failed to provision free server: ' . $e->getMessage());
             }
