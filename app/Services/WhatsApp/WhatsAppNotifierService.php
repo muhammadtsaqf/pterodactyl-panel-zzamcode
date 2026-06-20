@@ -24,10 +24,23 @@ class WhatsAppNotifierService
 
         $phone = $this->formatPhoneNumber($user->phone);
 
+        $settings = app(\Pterodactyl\Contracts\Repository\SettingsRepositoryInterface::class);
+        $groupJid = $settings->get('wa_bot:group_jid', '');
+
+        $target = $phone;
+        $mentions = [];
+
+        if ($groupJid !== '') {
+            $target = $groupJid;
+            $mentions = [$phone . '@s.whatsapp.net'];
+            $message = "Halo @{$phone},\n\n" . $message;
+        }
+
         try {
             $response = Http::timeout(5)->post("{$this->botUrl}/api/send-message", [
-                'number' => $phone,
+                'number' => $target,
                 'message' => $message,
+                'mentions' => $mentions,
             ]);
 
             $json = $response->json();
@@ -37,6 +50,33 @@ class WhatsAppNotifierService
             return false;
         }
     }
+
+    /**
+     * Send a WhatsApp message to the configured group (if any).
+     */
+    public function sendToGroup(string $message): bool
+    {
+        $settings = app(\Pterodactyl\Contracts\Repository\SettingsRepositoryInterface::class);
+        $groupJid = $settings->get('wa_bot:group_jid', '');
+
+        if ($groupJid === '') {
+            return false;
+        }
+
+        try {
+            $response = Http::timeout(5)->post("{$this->botUrl}/api/send-message", [
+                'number' => $groupJid,
+                'message' => $message,
+            ]);
+
+            $json = $response->json();
+            return isset($json['success']) && $json['success'] === true;
+        } catch (\Exception $e) {
+            \Log::error('WhatsApp Notifier Failed (Group): ' . $e->getMessage());
+            return false;
+        }
+    }
+
 
     /**
      * Normalize the phone number format to standard WhatsApp format (e.g. 628...).

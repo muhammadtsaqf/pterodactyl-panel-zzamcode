@@ -50,6 +50,16 @@ class SuspensionService
         try {
             // Tell wings to re-sync the server state.
             $this->daemonServerRepository->setServer($server)->sync();
+            
+            // Notify user via WhatsApp
+            $owner = $server->user;
+            if ($owner) {
+                $statusText = $isSuspending ? "Telah Disuspend ⚠️" : "Telah Aktif Kembali ✅";
+                $message = "Halo, status server Anda: *{$server->name}*\n\nStatus saat ini: {$statusText}\n\nSilakan cek panel untuk detail lebih lanjut.";
+                try {
+                    app(\Pterodactyl\Services\WhatsApp\WhatsAppNotifierService::class)->send($owner, $message);
+                } catch (\Exception $e) {}
+            }
         } catch (\Exception $exception) {
             // Rollback the server's suspension status if wings fails to sync the server.
             $server->update([

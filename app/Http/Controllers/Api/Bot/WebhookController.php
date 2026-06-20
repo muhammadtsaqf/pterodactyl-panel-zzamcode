@@ -176,7 +176,11 @@ class WebhookController extends Controller
                     'uses' => 0
                 ]);
 
-                return response()->json(['reply' => "✅ Diskon berhasil dibuat!\n\nKode: *{$code}*\nDiskon: {$percent}%\nMaks Kuota: {$maxUses}x pakai"]);
+                // Broadcast to group
+                $broadcastMsg = "🎉 *KODE DISKON BARU!*\n\nAda diskon *{$percent}%* untuk pembelian server di Store!\n\n👉 Kode: *{$code}*\n⏳ Kuota: {$maxUses}x pemakaian\n\nBuruan pakai sebelum kehabisan!";
+                app(\Pterodactyl\Services\WhatsApp\WhatsAppNotifierService::class)->sendToGroup($broadcastMsg);
+
+                return response()->json(['reply' => "✅ Diskon berhasil dibuat dan diumumkan ke grup!\n\nKode: *{$code}*\nDiskon: {$percent}%\nMaks Kuota: {$maxUses}x pakai"]);
             }
 
             if ($command === 'join') {

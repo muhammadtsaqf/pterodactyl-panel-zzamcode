@@ -54,6 +54,13 @@ class StoreDiscountController extends Controller
             'expires_at' => $request->input('expires_at'),
         ]);
 
+        $code = strtoupper($request->input('code'));
+        $percent = $request->input('discount_percent');
+        $maxUsesText = $request->input('max_uses') ? $request->input('max_uses') . 'x pemakaian' : 'Tanpa batas';
+        
+        $broadcastMsg = "🎉 *KODE DISKON BARU!*\n\nAda diskon *{$percent}%* untuk pembelian server di Store!\n\n👉 Kode: *{$code}*\n⏳ Kuota: {$maxUsesText}\n\nBuruan pakai sebelum kehabisan!";
+        app(\Pterodactyl\Services\WhatsApp\WhatsAppNotifierService::class)->sendToGroup($broadcastMsg);
+
         $this->alert->success('Successfully created a new discount code.')->flash();
 
         return redirect()->route('admin.store_discounts');

@@ -80,6 +80,14 @@ class ServerDeletionService
             // clear any allocation notes for the server
             $server->allocations()->update(['notes' => null]);
 
+            // Notify user via WhatsApp
+            $owner = $server->user;
+            if ($owner) {
+                $message = "Halo, ini adalah pemberitahuan bahwa server Anda: *{$server->name}*\n\nTelah Dihapus Secara Permanen (Deleted) ❌\n\nTerima kasih telah menggunakan layanan kami.";
+                try {
+                    app(\Pterodactyl\Services\WhatsApp\WhatsAppNotifierService::class)->send($owner, $message);
+                } catch (\Exception $e) {}
+            }
 
             $server->delete();
         });

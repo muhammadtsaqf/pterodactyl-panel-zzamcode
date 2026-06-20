@@ -270,7 +270,7 @@ app.post('/api/leave-group', async (req, res) => {
 });
 
 app.post('/api/send-message', async (req, res) => {
-    const { number, message } = req.body;
+    const { number, message, mentions } = req.body;
     if (!sock || !sock.authState.creds.registered) {
         return res.json({ success: false, message: 'Bot is offline or not registered.' });
     }
@@ -279,13 +279,26 @@ app.post('/api/send-message', async (req, res) => {
     }
 
     try {
-        const [result] = await sock.onWhatsApp(number);
-        if (result && result.exists) {
-            await sock.sendMessage(result.jid, { text: message });
-            return res.json({ success: true, message: 'Message sent successfully.' });
+        let targetJid = number;
+        // Check if it's a group
+        if (number.endsWith('@g.us')) {
+            targetJid = number;
         } else {
-            return res.json({ success: false, message: 'WhatsApp number not found/registered on WA.' });
+            const [result] = await sock.onWhatsApp(number);
+            if (result && result.exists) {
+                targetJid = result.jid;
+            } else {
+                return res.json({ success: false, message: 'WhatsApp number not found/registered on WA.' });
+            }
         }
+        
+        let msgOptions = { text: message };
+        if (mentions && Array.isArray(mentions)) {
+            msgOptions.mentions = mentions;
+        }
+
+        await sock.sendMessage(targetJid, msgOptions);
+        return res.json({ success: true, message: 'Message sent successfully.' });
     } catch (e) {
         return res.json({ success: false, message: e.message });
     }
