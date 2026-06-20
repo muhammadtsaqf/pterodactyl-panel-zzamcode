@@ -210,7 +210,7 @@ class StoreController extends ClientApiController
             'cpu' => $validated['cpu'],
             'swap' => 0,
             'io' => 500,
-            'image' => $egg->docker_images[0] ?? $egg->docker_image ?? 'ghcr.io/pterodactyl/yolks:java_17',
+            'image' => (is_array($egg->docker_images) && count($egg->docker_images) > 0) ? array_values($egg->docker_images)[0] : ($egg->docker_image ?? 'ghcr.io/pterodactyl/yolks:java_17'),
             'startup' => $egg->startup,
             'start_on_completion' => true,
             'store_duration_value' => $validated['duration'], // passed to webhook
