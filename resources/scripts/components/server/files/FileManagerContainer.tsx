@@ -76,6 +76,11 @@ export default () => {
                     <Can action={'file.create'}>
                         <div className={style.manager_actions}>
                             <FileManagerStatus />
+                            <NavLink to={`/server/${id}/files#/.trash`}>
+                                <Button.Danger variant={Button.Variants.Secondary} css={tw`w-full`}>
+                                    Recycle Bin
+                                </Button.Danger>
+                            </NavLink>
                             <NewDirectoryButton />
                             <UploadButton />
                             <NavLink to={`/server/${id}/files/new${window.location.hash}`}>

@@ -8,6 +8,8 @@ import useFlash from '@/plugins/useFlash';
 import compressFiles from '@/api/server/files/compressFiles';
 import { ServerContext } from '@/state/server';
 import deleteFiles from '@/api/server/files/deleteFiles';
+import renameFiles from '@/api/server/files/renameFiles';
+import createDirectory from '@/api/server/files/createDirectory';
 import RenameFileModal from '@/components/server/files/RenameFileModal';
 import Portal from '@/components/elements/Portal';
 import { Dialog } from '@/components/elements/dialog';
@@ -42,22 +44,53 @@ const MassActionsBar = () => {
             .then(() => setLoading(false));
     };
 
-    const onClickConfirmDeletion = () => {
+    const onClickConfirmDeletion = async () => {
         setLoading(true);
         setShowConfirm(false);
         clearFlashes('files');
         setLoadingMessage('Deleting files...');
 
-        deleteFiles(uuid, directory, selectedFiles)
-            .then(() => {
+        if (directory.startsWith('/.trash') || directory === '/.trash' || directory === '.trash') {
+            // Hard delete
+            deleteFiles(uuid, directory, selectedFiles)
+                .then(() => {
+                    mutate((files) => files.filter((f) => selectedFiles.indexOf(f.name) < 0), false);
+                    setSelectedFiles([]);
+                })
+                .catch((error) => {
+                    mutate();
+                    clearAndAddHttpError({ key: 'files', error });
+                })
+                .then(() => setLoading(false));
+        } else {
+            // Soft delete
+            const timestamp = new Date().getTime();
+            const relativeToRoot = directory.split('/').filter(p => p.length > 0).map(() => '..').join('/');
+            const trashPath = relativeToRoot ? `${relativeToRoot}/.trash` : '.trash';
+            
+            const renameData = selectedFiles.map(file => ({
+                from: file,
+                to: `${trashPath}/${file}-${timestamp}`
+            }));
+            
+            try {
+                // Ensure .trash exists
+                try {
+                    await createDirectory(uuid, '/', '.trash');
+                } catch (e) {
+                    // Ignore error if it already exists
+                }
+                
+                await renameFiles(uuid, directory, renameData);
                 mutate((files) => files.filter((f) => selectedFiles.indexOf(f.name) < 0), false);
                 setSelectedFiles([]);
-            })
-            .catch((error) => {
+            } catch (error) {
                 mutate();
                 clearAndAddHttpError({ key: 'files', error });
-            })
-            .then(() => setLoading(false));
+            } finally {
+                setLoading(false);
+            }
+        }
     };
 
     return (
@@ -75,8 +108,10 @@ const MassActionsBar = () => {
                 >
                     <p className={'mb-2'}>
                         Are you sure you want to delete&nbsp;
-                        <span className={'font-semibold text-gray-50'}>{selectedFiles.length} files</span>? This is a
-                        permanent action and the files cannot be recovered.
+                        <span className={'font-semibold text-gray-50'}>{selectedFiles.length} files</span>? 
+                        {(directory.startsWith('/.trash') || directory === '/.trash' || directory === '.trash') ? 
+                            ' This is a permanent action and the files cannot be recovered.' : 
+                            ' These files will be moved to the Recycle Bin (.trash).'}
                     </p>
                     {selectedFiles.slice(0, 15).map((file) => (
                         <li key={file}>{file}</li>

@@ -16,6 +16,8 @@ import RenameFileModal from '@/components/server/files/RenameFileModal';
 import { ServerContext } from '@/state/server';
 import { join } from 'pathe';
 import deleteFiles from '@/api/server/files/deleteFiles';
+import renameFiles from '@/api/server/files/renameFiles';
+import createDirectory from '@/api/server/files/createDirectory';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
 import copyFile from '@/api/server/files/copyFile';
 import Can from '@/components/elements/Can';
@@ -71,17 +73,39 @@ const FileDropdownMenu = ({ file }: { file: FileObject }) => {
         }
     });
 
-    const doDeletion = () => {
+    const doDeletion = async () => {
         clearFlashes('files');
 
         // For UI speed, immediately remove the file from the listing before calling the deletion function.
-        // If the delete actually fails, we'll fetch the current directory contents again automatically.
         mutate((files) => files.filter((f) => f.key !== file.key), false);
 
-        deleteFiles(uuid, directory, [file.name]).catch((error) => {
-            mutate();
-            clearAndAddHttpError({ key: 'files', error });
-        });
+        if (directory.startsWith('/.trash') || directory === '/.trash' || directory === '.trash') {
+            // Hard delete
+            deleteFiles(uuid, directory, [file.name]).catch((error) => {
+                mutate();
+                clearAndAddHttpError({ key: 'files', error });
+            });
+        } else {
+            // Soft delete
+            const timestamp = new Date().getTime();
+            const relativeToRoot = directory.split('/').filter(p => p.length > 0).map(() => '..').join('/');
+            const trashPath = relativeToRoot ? `${relativeToRoot}/.trash` : '.trash';
+            const toPath = `${trashPath}/${file.name}-${timestamp}`;
+            
+            try {
+                // Ensure .trash exists
+                try {
+                    await createDirectory(uuid, '/', '.trash');
+                } catch (e) {
+                    // Ignore error if it already exists
+                }
+                
+                await renameFiles(uuid, directory, [{ from: file.name, to: toPath }]);
+            } catch (error) {
+                mutate();
+                clearAndAddHttpError({ key: 'files', error });
+            }
+        }
     };
 
     const doCopy = () => {
@@ -136,8 +160,11 @@ const FileDropdownMenu = ({ file }: { file: FileObject }) => {
                 confirm={'Delete'}
                 onConfirmed={doDeletion}
             >
-                You will not be able to recover the contents of&nbsp;
-                <span className={'font-semibold text-gray-50'}>{file.name}</span> once deleted.
+                {(directory.startsWith('/.trash') || directory === '/.trash' || directory === '.trash') ? 
+                    'You will not be able to recover the contents of ' : 
+                    'This item will be moved to the Recycle Bin (.trash): '}
+                <span className={'font-semibold text-gray-50'}>{file.name}</span>
+                {(directory.startsWith('/.trash') || directory === '/.trash' || directory === '.trash') ? ' once deleted.' : '.'}
             </Dialog.Confirm>
             <DropdownMenu
                 ref={onClickRef}
