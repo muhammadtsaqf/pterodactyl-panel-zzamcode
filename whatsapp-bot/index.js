@@ -269,6 +269,23 @@ app.post('/api/leave-group', async (req, res) => {
     return res.json({ success: false, message: 'Bot offline atau tidak ada groupId' });
 });
 
+app.post('/api/add-participant', async (req, res) => {
+    const { groupId, number } = req.body;
+    if (!sock || !sock.authState.creds.registered) {
+        return res.json({ success: false, message: 'Bot is offline.' });
+    }
+    try {
+        let targetJid = number;
+        if (!number.endsWith('@s.whatsapp.net')) {
+             targetJid = number + '@s.whatsapp.net';
+        }
+        await sock.groupParticipantsUpdate(groupId, [targetJid], "add");
+        return res.json({ success: true });
+    } catch (e) {
+        return res.json({ success: false, message: e.message });
+    }
+});
+
 app.post('/api/send-message', async (req, res) => {
     const { number, message, mentions } = req.body;
     if (!sock || !sock.authState.creds.registered) {
