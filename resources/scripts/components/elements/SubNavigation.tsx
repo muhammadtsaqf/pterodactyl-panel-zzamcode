@@ -7,8 +7,15 @@ const SubNavigation = styled.div`
     backdrop-filter: blur(16px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 
+    /* Hide scrollbar for smooth mobile experience */
+    &::-webkit-scrollbar {
+        display: none;
+    }
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
     & > div {
-        ${tw`flex items-center text-sm px-8`};
+        ${tw`flex items-center text-sm px-4 md:px-8 min-w-max`};
 
         & > a,
         & > div {
