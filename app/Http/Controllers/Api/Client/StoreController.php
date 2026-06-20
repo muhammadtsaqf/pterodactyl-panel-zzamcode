@@ -117,6 +117,13 @@ class StoreController extends ClientApiController
 
     public function purchase(Request $request)
     {
+        /** @var User $user */
+        $user = $request->user();
+
+        if (empty($user->phone) || empty($user->address_1) || empty($user->city) || empty($user->state) || empty($user->zip) || empty($user->country)) {
+            return response()->json(['error' => 'Silakan lengkapi informasi profil Anda (No. HP, Alamat, Kota, dll) di menu Account sebelum melakukan pembelian.'], 403);
+        }
+
         if ($this->settings->get('settings::store:enabled', 1) == 0) {
             return response()->json(['error' => 'Store is currently disabled.'], 403);
         }
@@ -170,9 +177,6 @@ class StoreController extends ClientApiController
                 return response()->json(['error' => 'Invalid or expired discount code.'], 400);
             }
         }
-
-        /** @var User $user */
-        $user = $request->user();
 
         // Check if node has allocations (just a quick check before payment)
         try {
@@ -284,13 +288,17 @@ class StoreController extends ClientApiController
 
     public function renew(Request $request, Server $server)
     {
+        /** @var User $user */
+        $user = $request->user();
+
+        if (empty($user->phone) || empty($user->address_1) || empty($user->city) || empty($user->state) || empty($user->zip) || empty($user->country)) {
+            return response()->json(['error' => 'Silakan lengkapi informasi profil Anda (No. HP, Alamat, Kota, dll) di menu Account sebelum melakukan perpanjangan.'], 403);
+        }
+
         $validated = $request->validate([
             'duration' => 'required|integer|in:1,3,12',
             'discount_code' => 'nullable|string',
         ]);
-
-        /** @var User $user */
-        $user = $request->user();
 
         if ($server->owner_id !== $user->id) {
             return response()->json(['error' => 'You do not own this server.'], 403);
