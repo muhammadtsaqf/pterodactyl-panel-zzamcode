@@ -40,6 +40,7 @@ class Kernel extends ConsoleKernel
         
         // Send WhatsApp Reminders for Store Servers
         $schedule->command(\Pterodactyl\Console\Commands\Store\SendExpiryReminderCommand::class)->dailyAt('08:00');
+        $schedule->command(\Pterodactyl\Console\Commands\Store\SendDailyReportCommand::class)->dailyAt('00:00');
 
         if (config('backups.prune_age')) {
             // Every 30 minutes, run the backup pruning command so that any abandoned backups can be deleted.
