@@ -55,7 +55,7 @@ class WebhookController extends Controller
 
         $parts = explode(' ', $message);
         $command = $parts[0];
-        $target = $parts[1] ?? null;
+        $target = trim(substr($message, strlen($command))) ?: null;
 
         if ($command === 'servers' || $command === 'list') {
             $servers = Server::with('node')->where('owner_id', $user->id)->get();
@@ -69,21 +69,21 @@ class WebhookController extends Controller
                 $nodeName = $srv->node ? $srv->node->name : 'Unknown';
                 $reply .= "{$no}. *{$srv->name}*\nID: `{$srv->uuidShort}`\nNode: {$nodeName}\n\n";
             }
-            $reply .= "Gunakan perintah `start <ID>`, `stop <ID>`, atau `restart <ID>` untuk mengontrol server Anda.";
+            $reply .= "Gunakan perintah `start <Nama>`, `stop <Nama>`, atau `restart <Nama>` untuk mengontrol server Anda.";
             return response()->json(['reply' => $reply]);
         }
 
         if (in_array($command, ['start', 'stop', 'restart', 'kill'])) {
             if (!$target) {
-                return response()->json(['reply' => "⚠️ Format salah. Contoh: `{$command} a1b2c3d4`"]);
+                return response()->json(['reply' => "⚠️ Format salah. Contoh: `{$command} survival`"]);
             }
 
-            $server = Server::where('uuidShort', 'like', $target . '%')
+            $server = Server::where('name', 'like', '%' . $target . '%')
                             ->where('owner_id', $user->id)
                             ->first();
 
             if (!$server) {
-                return response()->json(['reply' => "❌ Server dengan ID `{$target}` tidak ditemukan atau bukan milik Anda."]);
+                return response()->json(['reply' => "❌ Server dengan nama `{$target}` tidak ditemukan atau bukan milik Anda."]);
             }
 
             try {
@@ -101,6 +101,6 @@ class WebhookController extends Controller
             }
         }
 
-        return response()->json(['reply' => "🤖 *Menu Bot Panel*\n\n- `servers` : Lihat daftar server\n- `start <ID>` : Nyalakan server\n- `stop <ID>` : Matikan server\n- `restart <ID>` : Restart server\n- `kill <ID>` : Matikan paksa server"]);
+        return response()->json(['reply' => "🤖 *Menu Bot Panel*\n\n- `servers` : Lihat daftar server\n- `start <Nama>` : Nyalakan server\n- `stop <Nama>` : Matikan server\n- `restart <Nama>` : Restart server\n- `kill <Nama>` : Matikan paksa server"]);
     }
 }
