@@ -59,6 +59,27 @@ class WebhookController extends Controller
             return response()->json(['reply' => "❌ Nomor WhatsApp Anda ({$cleanPhone}) belum terdaftar di panel.\n\nSilakan login ke panel dan update kolom Phone Number di Account Overview menjadi nomor Anda ini."]);
         }
 
+        $ownerNumber = $this->settings->get('wa_bot:owner_number', '');
+        $isOwner = ($ownerNumber !== '' && $ownerNumber === $cleanPhone);
+
+        // Enforce Group-Only mode
+        $remoteJid = $request->input('remoteJid', '');
+        $groupJid = $this->settings->get('wa_bot:group_jid', '');
+        
+        if ($groupJid !== '') {
+            // Bot is in group-only mode
+            if ($remoteJid !== $groupJid && !$isOwner) {
+                // Ignore commands if they are sent via PM (or another group), except from the Owner
+                // Check if message looks like a command
+                $parts = explode(' ', $message);
+                $command = $parts[0] ?? '';
+                if (in_array($command, ['servers', 'list', 'start', 'stop', 'restart', 'kill', 'help', 'menu'])) {
+                    return response()->json(['reply' => "⚠️ Bot saat ini berada dalam mode *Group Only*.\n\nBot hanya akan merespon perintah jika digunakan di dalam grup resmi kami."]);
+                }
+                return response()->json(['success' => true]); // Ignore silently for non-commands
+            }
+        }
+
         $parts = explode(' ', $message);
         $command = $parts[0];
         $target = trim(substr($message, strlen($command))) ?: null;
@@ -122,8 +143,6 @@ class WebhookController extends Controller
         // =====================================
         // BOT OWNER COMMANDS
         // =====================================
-        $ownerNumber = $this->settings->get('wa_bot:owner_number', '');
-        $isOwner = ($ownerNumber !== '' && $ownerNumber === $cleanPhone);
 
         if (in_array($command, ['menuowner', 'creatediscount', 'join', 'info', 'broadcast', 'restartbot'])) {
             if (!$isOwner) {

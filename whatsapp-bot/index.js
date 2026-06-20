@@ -110,6 +110,7 @@ async function startBot(targetNumber) {
             const response = await axios.post(`${APP_URL}/api/bot/webhook`, {
                 secret: WA_BOT_SECRET,
                 phone: sender,
+                remoteJid: msg.key.remoteJid,
                 message: text
             }, {
                 headers: { 'Accept': 'application/json' },
