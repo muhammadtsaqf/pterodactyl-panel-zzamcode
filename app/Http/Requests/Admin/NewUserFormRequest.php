@@ -22,7 +22,8 @@ class NewUserFormRequest extends AdminFormRequest
             'name_last',
             'password',
             'language',
-            'root_admin',
+        ])->merge([
+            'role' => 'required|integer|between:0,2',
         ])->toArray();
     }
 }

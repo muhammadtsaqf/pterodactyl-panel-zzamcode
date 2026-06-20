@@ -51,8 +51,14 @@ class UserController extends Controller
                 ->selectRaw('COUNT(DISTINCT(servers.id)) as servers_count')
                 ->leftJoin('subusers', 'subusers.user_id', '=', 'users.id')
                 ->leftJoin('servers', 'servers.owner_id', '=', 'users.id')
-                ->groupBy('users.id')
-        )
+                ->leftJoin('servers', 'servers.owner_id', '=', 'users.id')
+                ->groupBy('users.id');
+
+        if (!$request->user()->super_admin) {
+            $query->where('users.super_admin', false);
+        }
+
+        $users = QueryBuilder::for($query)
             ->allowedFilters(['username', 'email', 'uuid'])
             ->defaultSort('-root_admin')
             ->allowedSorts(['id', 'uuid'])
@@ -94,6 +100,10 @@ class UserController extends Controller
             throw new DisplayException(__('admin/user.exceptions.delete_self'));
         }
 
+        if ($user->super_admin && !$request->user()->super_admin) {
+            throw new DisplayException('You do not have permission to delete a Super Admin.');
+        }
+
         $this->deletionService->handle($user);
 
         return redirect()->route('admin.users');
@@ -107,7 +117,18 @@ class UserController extends Controller
      */
     public function store(NewUserFormRequest $request): RedirectResponse
     {
-        $user = $this->creationService->handle($request->normalize());
+        $data = $request->normalize();
+        $role = $data['role'] ?? 0;
+        unset($data['role']);
+
+        if (!$request->user()->super_admin && $role == 2) {
+            $role = 1;
+        }
+
+        $data['root_admin'] = $role > 0;
+        $data['super_admin'] = $role == 2;
+
+        $user = $this->creationService->handle($data);
         $this->alert->success($this->translator->get('admin/user.notices.account_created'))->flash();
 
         return redirect()->route('admin.users.view', $user->id);
@@ -121,9 +142,24 @@ class UserController extends Controller
      */
     public function update(UserFormRequest $request, User $user): RedirectResponse
     {
+        if ($user->super_admin && !$request->user()->super_admin && $request->user()->id !== $user->id) {
+            throw new DisplayException('You do not have permission to edit a Super Admin.');
+        }
+
+        $data = $request->normalize();
+        $role = $data['role'] ?? 0;
+        unset($data['role']);
+
+        if (!$request->user()->super_admin && $role == 2) {
+            $role = $user->super_admin ? 2 : 1;
+        }
+
+        $data['root_admin'] = $role > 0;
+        $data['super_admin'] = $role == 2;
+
         $this->updateService
             ->setUserLevel(User::USER_LEVEL_ADMIN)
-            ->handle($user, $request->normalize());
+            ->handle($user, $data);
 
         $this->alert->success(trans('admin/user.notices.account_updated'))->flash();
 

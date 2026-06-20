@@ -134,6 +134,7 @@ class User extends Model implements
         'totp_authenticated_at',
         'gravatar',
         'root_admin',
+        'super_admin',
         'phone',
         'company',
         'address_1',
@@ -149,6 +150,7 @@ class User extends Model implements
      */
     protected $casts = [
         'root_admin' => 'boolean',
+        'super_admin' => 'boolean',
         'use_totp' => 'boolean',
         'gravatar' => 'boolean',
         'totp_authenticated_at' => 'datetime',
@@ -165,6 +167,7 @@ class User extends Model implements
     protected $attributes = [
         'external_id' => null,
         'root_admin' => false,
+        'super_admin' => false,
         'language' => 'en',
         'use_totp' => false,
         'totp_secret' => null,
@@ -182,6 +185,7 @@ class User extends Model implements
         'name_last' => 'required|string|between:1,191',
         'password' => 'sometimes|nullable|string',
         'root_admin' => 'boolean',
+        'super_admin' => 'boolean',
         'language' => 'string',
         'use_totp' => 'boolean',
         'totp_secret' => 'nullable|string',

@@ -3,13 +3,14 @@
 use Illuminate\Support\Facades\Route;
 use Pterodactyl\Http\Controllers\Admin;
 use Pterodactyl\Http\Middleware\Admin\Servers\ServerInstalled;
+use Pterodactyl\Http\Middleware\Admin\SuperAdminAuthenticate;
 
 Route::get('/', [Admin\BaseController::class, 'index'])->name('admin.index');
 
 Route::get('/store', [Admin\StoreController::class, 'index'])->name('admin.store');
 Route::patch('/store', [Admin\StoreController::class, 'update']);
 
-Route::group(['prefix' => 'store-discounts'], function () {
+Route::group(['prefix' => 'store-discounts', 'middleware' => [SuperAdminAuthenticate::class]], function () {
     Route::get('/', [Admin\StoreDiscountController::class, 'index'])->name('admin.store_discounts');
     Route::post('/', [Admin\StoreDiscountController::class, 'store'])->name('admin.store_discounts.store');
     Route::delete('/{discount}', [Admin\StoreDiscountController::class, 'destroy'])->name('admin.store_discounts.destroy');
@@ -23,7 +24,7 @@ Route::group(['prefix' => 'store-discounts'], function () {
 | Endpoint: /admin/api
 |
 */
-Route::group(['prefix' => 'api'], function () {
+Route::group(['prefix' => 'api', 'middleware' => [SuperAdminAuthenticate::class]], function () {
     Route::get('/', [Admin\ApiController::class, 'index'])->name('admin.api.index');
     Route::get('/new', [Admin\ApiController::class, 'create'])->name('admin.api.new');
 
@@ -40,7 +41,7 @@ Route::group(['prefix' => 'api'], function () {
 | Endpoint: /admin/locations
 |
 */
-Route::group(['prefix' => 'locations'], function () {
+Route::group(['prefix' => 'locations', 'middleware' => [SuperAdminAuthenticate::class]], function () {
     Route::get('/', [Admin\LocationController::class, 'index'])->name('admin.locations');
     Route::get('/view/{location:id}', [Admin\LocationController::class, 'view'])->name('admin.locations.view');
 
@@ -56,7 +57,7 @@ Route::group(['prefix' => 'locations'], function () {
 | Endpoint: /admin/databases
 |
 */
-Route::group(['prefix' => 'databases'], function () {
+Route::group(['prefix' => 'databases', 'middleware' => [SuperAdminAuthenticate::class]], function () {
     Route::get('/', [Admin\DatabaseController::class, 'index'])->name('admin.databases');
     Route::get('/view/{host:id}', [Admin\DatabaseController::class, 'view'])->name('admin.databases.view');
 
@@ -73,7 +74,7 @@ Route::group(['prefix' => 'databases'], function () {
 | Endpoint: /admin/settings
 |
 */
-Route::group(['prefix' => 'settings'], function () {
+Route::group(['prefix' => 'settings', 'middleware' => [SuperAdminAuthenticate::class]], function () {
     Route::get('/', [Admin\Settings\IndexController::class, 'index'])->name('admin.settings');
     Route::get('/mail', [Admin\Settings\MailController::class, 'index'])->name('admin.settings.mail');
     Route::get('/advanced', [Admin\Settings\AdvancedController::class, 'index'])->name('admin.settings.advanced');
@@ -128,7 +129,9 @@ Route::group(['prefix' => 'users'], function () {
 | Endpoint: /admin/servers
 |
 */
-Route::group(['prefix' => 'servers'], function () {
+use Pterodactyl\Http\Middleware\Admin\Servers\AdminServerOwnership;
+
+Route::group(['prefix' => 'servers', 'middleware' => [AdminServerOwnership::class]], function () {
     Route::get('/', [Admin\Servers\ServerController::class, 'index'])->name('admin.servers');
     Route::get('/new', [Admin\Servers\CreateServerController::class, 'index'])->name('admin.servers.new');
     Route::get('/view/{server:id}', [Admin\Servers\ServerViewController::class, 'index'])->name('admin.servers.view');
@@ -171,7 +174,7 @@ Route::group(['prefix' => 'servers'], function () {
 | Endpoint: /admin/nodes
 |
 */
-Route::group(['prefix' => 'nodes'], function () {
+Route::group(['prefix' => 'nodes', 'middleware' => [SuperAdminAuthenticate::class]], function () {
     Route::get('/', [Admin\Nodes\NodeController::class, 'index'])->name('admin.nodes');
     Route::get('/new', [Admin\NodesController::class, 'create'])->name('admin.nodes.new');
     Route::get('/view/{node:id}', [Admin\Nodes\NodeViewController::class, 'index'])->name('admin.nodes.view');
@@ -202,7 +205,7 @@ Route::group(['prefix' => 'nodes'], function () {
 | Endpoint: /admin/mounts
 |
 */
-Route::group(['prefix' => 'mounts'], function () {
+Route::group(['prefix' => 'mounts', 'middleware' => [SuperAdminAuthenticate::class]], function () {
     Route::get('/', [Admin\MountController::class, 'index'])->name('admin.mounts');
     Route::get('/view/{mount:id}', [Admin\MountController::class, 'view'])->name('admin.mounts.view');
 
@@ -224,7 +227,7 @@ Route::group(['prefix' => 'mounts'], function () {
 | Endpoint: /admin/nests
 |
 */
-Route::group(['prefix' => 'nests'], function () {
+Route::group(['prefix' => 'nests', 'middleware' => [SuperAdminAuthenticate::class]], function () {
     Route::get('/', [Admin\Nests\NestController::class, 'index'])->name('admin.nests');
     Route::get('/new', [Admin\Nests\NestController::class, 'create'])->name('admin.nests.new');
     Route::get('/view/{nest:id}', [Admin\Nests\NestController::class, 'view'])->name('admin.nests.view');
@@ -259,7 +262,7 @@ Route::group(['prefix' => 'nests'], function () {
 | Endpoint: /admin/payment-gateway
 |
 */
-Route::group(['prefix' => 'payment-gateway'], function () {
+Route::group(['prefix' => 'payment-gateway', 'middleware' => [SuperAdminAuthenticate::class]], function () {
     Route::get('/', [Admin\PaymentGatewayController::class, 'index'])->name('admin.payment_gateway');
     Route::post('/', [Admin\PaymentGatewayController::class, 'update']);
     Route::post('/ping', [Admin\PaymentGatewayController::class, 'ping'])->name('admin.payment_gateway.ping');

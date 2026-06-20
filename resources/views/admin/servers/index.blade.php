@@ -44,10 +44,22 @@
                         </tr>
                         @foreach ($servers as $server)
                             <tr data-server="{{ $server->uuidShort }}">
-                                <td><a href="{{ route('admin.servers.view', $server->id) }}">{{ $server->name }}</a></td>
+                                <td>
+                                    @if(Auth::user()->super_admin || $server->owner_id === Auth::user()->id)
+                                        <a href="{{ route('admin.servers.view', $server->id) }}">{{ $server->name }}</a>
+                                    @else
+                                        {{ $server->name }}
+                                    @endif
+                                </td>
                                 <td><code title="{{ $server->uuid }}">{{ $server->uuid }}</code></td>
                                 <td><a href="{{ route('admin.users.view', $server->user->id) }}">{{ $server->user->username }}</a></td>
-                                <td><a href="{{ route('admin.nodes.view', $server->node->id) }}">{{ $server->node->name }}</a></td>
+                                <td>
+                                    @if(Auth::user()->super_admin)
+                                        <a href="{{ route('admin.nodes.view', $server->node->id) }}">{{ $server->node->name }}</a>
+                                    @else
+                                        {{ $server->node->name }}
+                                    @endif
+                                </td>
                                 <td>
                                     <code>{{ $server->allocation->alias }}:{{ $server->allocation->port }}</code>
                                 </td>
@@ -61,7 +73,9 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    <a class="btn btn-xs btn-default" href="/server/{{ $server->uuidShort }}"><i class="fa fa-wrench"></i></a>
+                                    @if(Auth::user()->super_admin || $server->owner_id === Auth::user()->id)
+                                        <a class="btn btn-xs btn-default" href="/server/{{ $server->uuidShort }}"><i class="fa fa-wrench"></i></a>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

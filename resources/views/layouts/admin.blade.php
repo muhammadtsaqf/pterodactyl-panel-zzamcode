@@ -142,6 +142,7 @@
                                 <i class="fa fa-home"></i> <span>Overview</span>
                             </a>
                         </li>
+                        @if(Auth::user()->super_admin)
                         <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.settings') ?: 'active' }}">
                             <a href="{{ route('admin.settings')}}">
                                 <i class="fa fa-wrench"></i> <span>Settings</span>
@@ -183,6 +184,7 @@
                                 <i class="fa fa-sitemap"></i> <span>Nodes</span>
                             </a>
                         </li>
+                        @endif
                         <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.servers') ?: 'active' }}">
                             <a href="{{ route('admin.servers') }}">
                                 <i class="fa fa-server"></i> <span>Servers</span>
@@ -198,6 +200,7 @@
                                 <i class="fa fa-whatsapp"></i> <span>WhatsApp Bot</span>
                             </a>
                         </li>
+                        @if(Auth::user()->super_admin)
                         <li class="header">MANAGEMENT</li>
                         <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.mounts') ?: 'active' }}">
                             <a href="{{ route('admin.mounts') }}">
@@ -209,6 +212,7 @@
                                 <i class="fa fa-th-large"></i> <span>Nests</span>
                             </a>
                         </li>
+                        @endif
                     </ul>
                 </section>
             </aside>

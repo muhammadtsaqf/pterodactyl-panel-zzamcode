@@ -71,13 +71,16 @@
                 </div>
                 <div class="box-body">
                     <div class="form-group col-md-12">
-                        <label for="root_admin" class="control-label">Administrator</label>
+                        <label for="role" class="control-label">Role</label>
                         <div>
-                            <select name="root_admin" class="form-control">
-                                <option value="0">@lang('strings.no')</option>
-                                <option value="1">@lang('strings.yes')</option>
+                            <select name="role" class="form-control">
+                                <option value="0">User</option>
+                                <option value="1">Admin</option>
+                                @if(Auth::user()->super_admin)
+                                <option value="2">Super Admin</option>
+                                @endif
                             </select>
-                            <p class="text-muted"><small>Setting this to 'Yes' gives a user full administrative access.</small></p>
+                            <p class="text-muted"><small>Select the user's role. Super Admins have full access, Admins have limited management access.</small></p>
                         </div>
                     </div>
                 </div>
