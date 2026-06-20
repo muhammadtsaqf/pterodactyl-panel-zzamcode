@@ -66,6 +66,7 @@ class RouteServiceProvider extends ServiceProvider
 
             Route::post('/api/webhooks/transaksikita', [\Pterodactyl\Http\Controllers\Api\Webhooks\TransaksikitaController::class, 'handle']);
             Route::post('/api/bot/webhook', [\Pterodactyl\Http\Controllers\Api\Bot\WebhookController::class, 'handle']);
+            Route::post('/api/bot/group-update', [\Pterodactyl\Http\Controllers\Api\Bot\WebhookController::class, 'groupUpdate']);
         });
     }
 

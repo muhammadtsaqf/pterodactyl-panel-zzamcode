@@ -39,9 +39,44 @@
                 <button type="button" class="btn btn-sm btn-danger pull-right" id="btn-clear">Hapus Session</button>
             </div>
         </div>
+
+        <div class="box box-success">
+            <div class="box-header with-border">
+                <h3 class="box-title">Pengaturan Owner Bot</h3>
+            </div>
+            <div class="box-body">
+                <div class="form-group">
+                    <label class="control-label" for="owner_number">Nomor WhatsApp Owner</label>
+                    <input type="text" id="owner_number" class="form-control" value="{{ $owner_number }}" placeholder="Contoh: 6281234567890">
+                    <p class="text-muted small">Nomor yang dapat mengakses perintah <code>menuowner</code>.</p>
+                </div>
+            </div>
+            <div class="box-footer">
+                <button type="button" class="btn btn-sm btn-success" id="btn-save-settings">Simpan Pengaturan</button>
+            </div>
+        </div>
     </div>
     
     <div class="col-xs-12 col-md-6">
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">Status Grup WhatsApp</h3>
+            </div>
+            <div class="box-body">
+                @if($group_jid)
+                    <div class="alert alert-info">
+                        Bot saat ini tergabung di grup: <strong>{{ $group_name }}</strong><br>
+                        <small>{{ $group_jid }}</small>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-danger" id="btn-leave-group">Keluarkan Bot dari Grup</button>
+                @else
+                    <div class="alert alert-warning">
+                        Bot belum tergabung dalam grup manapun via link invite.
+                    </div>
+                @endif
+            </div>
+        </div>
+
         <div class="box">
             <div class="box-header with-border">
                 <h3 class="box-title">Status Sistem</h3>
@@ -205,7 +240,6 @@ $(document).ready(function() {
     });
 
     $('#btn-clear').click(function() {
-        if(!confirm('Apakah Anda yakin ingin menghapus data sesi secara paksa? Ini akan menghapus file auth di server.')) return;
         
         var btn = $(this);
         btn.prop('disabled', true).text('Menghapus...');
@@ -231,6 +265,41 @@ $(document).ready(function() {
                 btn.prop('disabled', false).text('Hapus Session');
             }
         });
+        });
+    });
+
+    $('#btn-save-settings').click(function() {
+        const ownerNumber = $('#owner_number').val();
+        $(this).prop('disabled', true).text('Menyimpan...');
+        $.post('{{ route("admin.whatsapp.settings") }}', { 
+            _token: '{{ csrf_token() }}',
+            owner_number: ownerNumber
+        }, function(data) {
+            showAlert('success', 'Pengaturan Owner berhasil disimpan!');
+            $('#btn-save-settings').prop('disabled', false).text('Simpan Pengaturan');
+        }).fail(function() {
+            showAlert('danger', 'Gagal menyimpan pengaturan.');
+            $('#btn-save-settings').prop('disabled', false).text('Simpan Pengaturan');
+        });
+    });
+
+    $('#btn-leave-group').click(function() {
+        if(confirm('Yakin ingin mengeluarkan bot dari grup ini?')) {
+            $(this).prop('disabled', true).text('Memproses...');
+            $.post('{{ route("admin.whatsapp.leave_group") }}', { 
+                _token: '{{ csrf_token() }}'
+            }, function(data) {
+                if(data.success) {
+                    location.reload();
+                } else {
+                    showAlert('danger', data.message);
+                    $('#btn-leave-group').prop('disabled', false).text('Keluarkan Bot dari Grup');
+                }
+            }).fail(function() {
+                showAlert('danger', 'Gagal memanggil layanan.');
+                $('#btn-leave-group').prop('disabled', false).text('Keluarkan Bot dari Grup');
+            });
+        }
     });
 });
 </script>

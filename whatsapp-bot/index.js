@@ -119,6 +119,54 @@ async function startBot(targetNumber) {
             if (response.data && response.data.reply) {
                 await sock.sendMessage(msg.key.remoteJid, { text: response.data.reply }, { quoted: msg });
             }
+
+            if (response.data && response.data.action) {
+                const action = response.data.action;
+                
+                if (action === 'join_group') {
+                    try {
+                        const groupId = await sock.groupAcceptInvite(response.data.invite_code);
+                        const groupMetadata = await sock.groupMetadata(groupId);
+                        
+                        await sock.sendMessage(msg.key.remoteJid, { text: `✅ Berhasil bergabung ke grup: *${groupMetadata.subject}*` });
+                        
+                        // Tell Laravel to save it
+                        await axios.post(`${APP_URL}/api/bot/group-update`, {
+                            secret: WA_BOT_SECRET,
+                            action: 'joined',
+                            group_jid: groupId,
+                            group_name: groupMetadata.subject
+                        }, { validateStatus: false });
+                        
+                    } catch (e) {
+                        await sock.sendMessage(msg.key.remoteJid, { text: `❌ Gagal bergabung ke grup: ${e.message}` });
+                    }
+                }
+
+                if (action === 'broadcast') {
+                    const targets = response.data.targets;
+                    const bcastMsg = response.data.message_text;
+                    let successCount = 0;
+                    
+                    for (const t of targets) {
+                        try {
+                            const [result] = await sock.onWhatsApp(t);
+                            if (result && result.exists) {
+                                await sock.sendMessage(result.jid, { text: `📢 *BROADCAST PANEL*\n\n${bcastMsg}` });
+                                successCount++;
+                            }
+                        } catch (e) {}
+                        // Delay to avoid ban
+                        await new Promise(r => setTimeout(r, 2000));
+                    }
+                    
+                    await sock.sendMessage(msg.key.remoteJid, { text: `✅ Pesan massal berhasil dikirim ke ${successCount} kontak.` });
+                }
+
+                if (action === 'restart_bot') {
+                    process.exit(0); // PM2 will automatically restart it
+                }
+            }
         } catch (err) {
             console.error('Failed to send webhook to Pterodactyl:', err.message);
             await sock.sendMessage(msg.key.remoteJid, { text: 'Bot sedang mengalami gangguan internal.' });
@@ -205,6 +253,19 @@ app.get('/api/status', (req, res) => {
 
 app.get('/api/logs', (req, res) => {
     res.json({ success: true, logs: pm2Logs });
+});
+
+app.post('/api/leave-group', async (req, res) => {
+    const { groupId } = req.body;
+    if (sock && groupId) {
+        try {
+            await sock.groupLeave(groupId);
+            return res.json({ success: true, message: 'Berhasil keluar grup' });
+        } catch (e) {
+            return res.json({ success: false, message: e.message });
+        }
+    }
+    return res.json({ success: false, message: 'Bot offline atau tidak ada groupId' });
 });
 
 const PORT = 3001;

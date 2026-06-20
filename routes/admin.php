@@ -95,6 +95,8 @@ Route::group(['prefix' => 'settings', 'middleware' => [SuperAdminAuthenticate::c
 |
 */
 Route::get('/whatsapp', [Admin\WhatsAppController::class, 'index'])->name('admin.whatsapp');
+Route::post('/whatsapp/settings', [Admin\WhatsAppController::class, 'saveSettings'])->name('admin.whatsapp.settings');
+Route::post('/whatsapp/leave-group', [Admin\WhatsAppController::class, 'leaveGroup'])->name('admin.whatsapp.leave_group');
 Route::get('/whatsapp/status', [Admin\WhatsAppController::class, 'status'])->name('admin.whatsapp.status');
 Route::post('/whatsapp/start', [Admin\WhatsAppController::class, 'start'])->name('admin.whatsapp.start');
 Route::post('/whatsapp/stop', [Admin\WhatsAppController::class, 'stop'])->name('admin.whatsapp.stop');
