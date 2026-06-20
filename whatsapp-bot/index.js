@@ -92,8 +92,8 @@ async function startBot(targetNumber) {
         } catch (e) {}
 
         // Normalize JID to ensure we get the clean phone number without device suffixes.
-        // Use senderPn if available (when WhatsApp hides the real JID behind a @lid)
-        const senderJid = msg.key.senderPn || msg.key.participant || msg.key.remoteJid;
+        // Use participantPn or senderPn if available (when WhatsApp hides the real JID behind a @lid)
+        const senderJid = msg.key.participantPn || msg.key.senderPn || msg.key.participant || msg.key.remoteJid;
         const normalizedJid = jidNormalizedUser(senderJid);
         const sender = normalizedJid.split('@')[0];
         const text = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
