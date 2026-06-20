@@ -3,6 +3,7 @@ import { httpErrorToHuman } from '@/api/http';
 import { CSSTransition } from 'react-transition-group';
 import Spinner from '@/components/elements/Spinner';
 import FileObjectRow from '@/components/server/files/FileObjectRow';
+import RecycleBinRow from '@/components/server/files/RecycleBinRow';
 import FileManagerBreadcrumbs from '@/components/server/files/FileManagerBreadcrumbs';
 import { FileObject } from '@/api/server/files/loadDirectory';
 import NewDirectoryButton from '@/components/server/files/NewDirectoryButton';
@@ -76,11 +77,6 @@ export default () => {
                     <Can action={'file.create'}>
                         <div className={style.manager_actions}>
                             <FileManagerStatus />
-                            <NavLink to={`/server/${id}/files#/.trash`}>
-                                <Button.Danger variant={Button.Variants.Secondary} css={tw`w-full`}>
-                                    Recycle Bin
-                                </Button.Danger>
-                            </NavLink>
                             <NewDirectoryButton />
                             <UploadButton />
                             <NavLink to={`/server/${id}/files/new${window.location.hash}`}>
@@ -108,7 +104,11 @@ export default () => {
                                     </div>
                                 )}
                                 {sortFiles(files.slice(0, 250)).map((file) => (
-                                    <FileObjectRow key={file.key} file={file} />
+                                    file.name === '.RecycleBin' ? (
+                                        <RecycleBinRow key={file.key} />
+                                    ) : (
+                                        <FileObjectRow key={file.key} file={file} />
+                                    )
                                 ))}
                                 <MassActionsBar />
                             </div>

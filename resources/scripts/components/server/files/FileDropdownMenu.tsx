@@ -79,7 +79,7 @@ const FileDropdownMenu = ({ file }: { file: FileObject }) => {
         // For UI speed, immediately remove the file from the listing before calling the deletion function.
         mutate((files) => files.filter((f) => f.key !== file.key), false);
 
-        if (directory.startsWith('/.trash') || directory === '/.trash' || directory === '.trash') {
+        if (directory.startsWith('/.RecycleBin') || directory === '/.RecycleBin' || directory === '.RecycleBin') {
             // Hard delete
             deleteFiles(uuid, directory, [file.name]).catch((error) => {
                 mutate();
@@ -89,13 +89,13 @@ const FileDropdownMenu = ({ file }: { file: FileObject }) => {
             // Soft delete
             const timestamp = new Date().getTime();
             const relativeToRoot = directory.split('/').filter(p => p.length > 0).map(() => '..').join('/');
-            const trashPath = relativeToRoot ? `${relativeToRoot}/.trash` : '.trash';
+            const trashPath = relativeToRoot ? `${relativeToRoot}/.RecycleBin` : '.RecycleBin';
             const toPath = `${trashPath}/${file.name}-${timestamp}`;
             
             try {
-                // Ensure .trash exists
+                // Ensure .RecycleBin exists
                 try {
-                    await createDirectory(uuid, '/', '.trash');
+                    await createDirectory(uuid, '/', '.RecycleBin');
                 } catch (e) {
                     // Ignore error if it already exists
                 }
@@ -160,11 +160,11 @@ const FileDropdownMenu = ({ file }: { file: FileObject }) => {
                 confirm={'Delete'}
                 onConfirmed={doDeletion}
             >
-                {(directory.startsWith('/.trash') || directory === '/.trash' || directory === '.trash') ? 
+                {(directory.startsWith('/.RecycleBin') || directory === '/.RecycleBin' || directory === '.RecycleBin') ? 
                     'You will not be able to recover the contents of ' : 
-                    'This item will be moved to the Recycle Bin (.trash): '}
+                    'This item will be moved to the Recycle Bin (.RecycleBin): '}
                 <span className={'font-semibold text-gray-50'}>{file.name}</span>
-                {(directory.startsWith('/.trash') || directory === '/.trash' || directory === '.trash') ? ' once deleted.' : '.'}
+                {(directory.startsWith('/.RecycleBin') || directory === '/.RecycleBin' || directory === '.RecycleBin') ? ' once deleted.' : '.'}
             </Dialog.Confirm>
             <DropdownMenu
                 ref={onClickRef}

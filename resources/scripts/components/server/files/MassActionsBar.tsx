@@ -50,7 +50,7 @@ const MassActionsBar = () => {
         clearFlashes('files');
         setLoadingMessage('Deleting files...');
 
-        if (directory.startsWith('/.trash') || directory === '/.trash' || directory === '.trash') {
+        if (directory.startsWith('/.RecycleBin') || directory === '/.RecycleBin' || directory === '.RecycleBin') {
             // Hard delete
             deleteFiles(uuid, directory, selectedFiles)
                 .then(() => {
@@ -66,7 +66,7 @@ const MassActionsBar = () => {
             // Soft delete
             const timestamp = new Date().getTime();
             const relativeToRoot = directory.split('/').filter(p => p.length > 0).map(() => '..').join('/');
-            const trashPath = relativeToRoot ? `${relativeToRoot}/.trash` : '.trash';
+            const trashPath = relativeToRoot ? `${relativeToRoot}/.RecycleBin` : '.RecycleBin';
             
             const renameData = selectedFiles.map(file => ({
                 from: file,
@@ -74,9 +74,9 @@ const MassActionsBar = () => {
             }));
             
             try {
-                // Ensure .trash exists
+                // Ensure .RecycleBin exists
                 try {
-                    await createDirectory(uuid, '/', '.trash');
+                    await createDirectory(uuid, '/', '.RecycleBin');
                 } catch (e) {
                     // Ignore error if it already exists
                 }
@@ -109,9 +109,9 @@ const MassActionsBar = () => {
                     <p className={'mb-2'}>
                         Are you sure you want to delete&nbsp;
                         <span className={'font-semibold text-gray-50'}>{selectedFiles.length} files</span>? 
-                        {(directory.startsWith('/.trash') || directory === '/.trash' || directory === '.trash') ? 
+                        {(directory.startsWith('/.RecycleBin') || directory === '/.RecycleBin' || directory === '.RecycleBin') ? 
                             ' This is a permanent action and the files cannot be recovered.' : 
-                            ' These files will be moved to the Recycle Bin (.trash).'}
+                            ' These files will be moved to the Recycle Bin (.RecycleBin).'}
                     </p>
                     {selectedFiles.slice(0, 15).map((file) => (
                         <li key={file}>{file}</li>
