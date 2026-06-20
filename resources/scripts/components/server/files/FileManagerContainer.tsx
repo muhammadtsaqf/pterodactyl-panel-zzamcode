@@ -26,8 +26,16 @@ import style from './style.module.css';
 
 const sortFiles = (files: FileObject[]): FileObject[] => {
     const sortedFiles: FileObject[] = files
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .sort((a, b) => (a.isFile === b.isFile ? 0 : a.isFile ? 1 : -1));
+        .sort((a, b) => {
+            if (a.name === '.RecycleBin') return -1;
+            if (b.name === '.RecycleBin') return 1;
+            return a.name.localeCompare(b.name);
+        })
+        .sort((a, b) => {
+            if (a.name === '.RecycleBin') return -1;
+            if (b.name === '.RecycleBin') return 1;
+            return a.isFile === b.isFile ? 0 : a.isFile ? 1 : -1;
+        });
     return sortedFiles.filter((file, index) => index === 0 || file.name !== sortedFiles[index - 1].name);
 };
 
