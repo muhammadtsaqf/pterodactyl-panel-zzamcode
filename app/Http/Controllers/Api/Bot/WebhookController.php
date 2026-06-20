@@ -65,67 +65,96 @@ class WebhookController extends Controller
         // Enforce Group-Only mode
         $remoteJid = $request->input('remoteJid', '');
         $groupJid = $this->settings->get('wa_bot:group_jid', '');
+        $isGroupMessage = str_contains($remoteJid, '@g.us');
         
-        if ($groupJid !== '') {
-            // Bot is in group-only mode
-            if ($remoteJid !== $groupJid && !$isOwner) {
-                // Ignore commands if they are sent via PM (or another group), except from the Owner
-                // Check if message looks like a command
-                $parts = explode(' ', $message);
-                $command = $parts[0] ?? '';
-                if (in_array($command, ['servers', 'list', 'start', 'stop', 'restart', 'kill', 'help', 'menu'])) {
-                    return response()->json(['reply' => "⚠️ Bot saat ini berada dalam mode *Group Only*.\n\nBot hanya akan merespon perintah jika digunakan di dalam grup resmi kami."]);
-                }
-                return response()->json(['success' => true]); // Ignore silently for non-commands
+        // Hanya owner yang bisa private
+        if (!$isGroupMessage && !$isOwner) {
+            $parts = explode(' ', $message);
+            $command = $parts[0] ?? '';
+            if (in_array($command, ['.mysrv', 'servers', 'list', 'start', 'stop', 'restart', 'kill', 'help', 'menu'])) {
+                return response()->json(['reply' => "⚠️ Bot saat ini hanya melayani perintah di dalam Grup resmi.\nAnda tidak dapat menggunakannya di *Private Chat*."]);
             }
+            return response()->json(['success' => true]); // Ignore silently
+        }
+        
+        // Jika sudah gabung ke satu grup, abaikan grup lain
+        if ($isGroupMessage && $groupJid !== '' && $remoteJid !== $groupJid) {
+            return response()->json(['success' => true]);
         }
 
         $parts = explode(' ', $message);
         $command = $parts[0];
         $target = trim(substr($message, strlen($command))) ?: null;
 
-        if ($command === 'servers' || $command === 'list') {
+        if ($command === '.mysrv' || $command === 'servers' || $command === 'list') {
+            if ($target && in_array(explode(' ', $target)[0], ['start', 'stop', 'restart', 'kill', 'reinstall', 'createbackup', 'backup'])) {
+                $subArgs = explode(' ', $target);
+                $subCommand = $subArgs[0];
+                $serverId = $subArgs[1] ?? null;
+
+                if (!$serverId) {
+                    return response()->json(['reply' => "⚠️ Format salah. Contoh: `.mysrv {$subCommand} 453`"]);
+                }
+
+                $server = Server::where('id', $serverId)
+                                ->where('owner_id', $user->id)
+                                ->first();
+
+                if (!$server) {
+                    return response()->json(['reply' => "❌ Server dengan ID `{$serverId}` tidak ditemukan atau bukan milik Anda."]);
+                }
+
+                try {
+                    if (in_array($subCommand, ['start', 'stop', 'restart', 'kill'])) {
+                        $this->powerRepository->setServer($server)->send($subCommand);
+                        return response()->json(['reply' => "✅ Perintah *{$subCommand}* berhasil dikirim ke server *{$server->name}*."]);
+                    } elseif ($subCommand === 'reinstall') {
+                        app(\Pterodactyl\Repositories\Eloquent\ServerRepository::class)->update($server->id, ['status' => Server::STATUS_INSTALLING]);
+                        return response()->json(['reply' => "✅ Proses *reinstall* untuk server *{$server->name}* telah dimulai. Server tidak dapat diakses untuk sementara waktu."]);
+                    } elseif ($subCommand === 'createbackup') {
+                        return response()->json(['reply' => "⏳ Fitur create backup via WA segera hadir."]);
+                    } elseif ($subCommand === 'backup') {
+                        return response()->json(['reply' => "⏳ Fitur send backup via WA segera hadir."]);
+                    }
+                } catch (\Exception $e) {
+                    return response()->json(['reply' => "❌ Gagal mengirim perintah ke server. Error: " . $e->getMessage()]);
+                }
+            }
+
             $servers = Server::with('node')->where('owner_id', $user->id)->get();
             if ($servers->isEmpty()) {
                 return response()->json(['reply' => "Anda belum memiliki server di panel."]);
             }
 
-            $reply = "🚀 *Daftar Server Anda:*\n\n";
+            $reply = "⚙️ OPTIONS CONTROL SERVER\n\n" .
+                     "1. Start: .mysrv start [idserver]\n" .
+                     "2. Restart: .mysrv restart [idserver]\n" .
+                     "3. Stop: .mysrv stop [idserver]\n" .
+                     "4. Reinstall: .mysrv reinstall [idserver]\n" .
+                     "5. Create Backup: .mysrv createbackup [idserver]\n" .
+                     "6. Send Backup: .mysrv backup [idserver]\n\n" .
+                     "📋 ＤＡＦＴＡＲ ＳＥＲＶＥＲ\n\n";
+
             foreach ($servers as $idx => $srv) {
-                $no = $idx + 1;
-                $nodeName = $srv->node ? $srv->node->name : 'Unknown';
-                $reply .= "{$no}. *{$srv->name}*\nID: `{$srv->uuidShort}`\nNode: {$nodeName}\n\n";
+                $expired = "Permanen";
+                if (isset($srv->store_expires_at) && $srv->store_expires_at) {
+                    $expired = \Carbon\Carbon::parse($srv->store_expires_at)->translatedFormat('d F Y');
+                }
+                
+                $status = "Aktif";
+                if ($srv->isSuspended()) $status = "Suspended";
+                elseif (!$srv->isInstalled()) $status = "Installing";
+
+                $backupStatus = ($srv->backup_limit > 0) ? "Aktif" : "Nonaktif";
+
+                $reply .= "📌 ID Server: {$srv->id}\n" .
+                          "📛 Nama: {$srv->name}\n" .
+                          "⏳ Expired: {$expired}\n" .
+                          "✅ Status: {$status}\n" .
+                          "🔄 Backup: {$backupStatus}\n\n";
             }
-            $reply .= "Gunakan perintah `start <Nama>`, `stop <Nama>`, atau `restart <Nama>` untuk mengontrol server Anda.";
+            $reply .= "📊 Total: {$servers->count()} server";
             return response()->json(['reply' => $reply]);
-        }
-
-        if (in_array($command, ['start', 'stop', 'restart', 'kill'])) {
-            if (!$target) {
-                return response()->json(['reply' => "⚠️ Format salah. Contoh: `{$command} survival`"]);
-            }
-
-            $server = Server::where('name', 'like', '%' . $target . '%')
-                            ->where('owner_id', $user->id)
-                            ->first();
-
-            if (!$server) {
-                return response()->json(['reply' => "❌ Server dengan nama `{$target}` tidak ditemukan atau bukan milik Anda."]);
-            }
-
-            try {
-                $this->powerRepository->setServer($server)->send($command);
-                $action = [
-                    'start' => 'menyalakan',
-                    'stop' => 'mematikan',
-                    'restart' => 'me-restart',
-                    'kill' => 'menghentikan paksa'
-                ][$command];
-
-                return response()->json(['reply' => "✅ Perintah *{$command}* berhasil dikirim ke server *{$server->name}*."]);
-            } catch (\Exception $e) {
-                return response()->json(['reply' => "❌ Gagal mengirim perintah ke server. Node mungkin offline."]);
-            }
         }
 
         if ($command === 'help' || $command === 'menu') {
