@@ -123,7 +123,7 @@ export default () => {
                                 <NewDirectoryButton />
                                 <UploadButton />
                                 <NavLink to={`/server/${id}/files/new${window.location.hash}`}>
-                                    <Button css={tw`bg-blue-600 hover:bg-blue-500 text-white border-none shadow-lg shadow-blue-500/30 transition-all duration-200`}>
+                                    <Button css={tw`bg-blue-600 hover:bg-blue-500 text-white border-none shadow-lg transition-all duration-200`}>
                                         <FontAwesomeIcon icon={faFileCode} css={tw`mr-2`} />
                                         New File
                                     </Button>
