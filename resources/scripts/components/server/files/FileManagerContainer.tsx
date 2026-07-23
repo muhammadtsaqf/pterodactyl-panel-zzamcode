@@ -23,6 +23,8 @@ import ErrorBoundary from '@/components/elements/ErrorBoundary';
 import { FileActionCheckbox } from '@/components/server/files/SelectFileCheckbox';
 import { hashToPath } from '@/helpers';
 import style from './style.module.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFolderOpen, faFileCode, faServer } from '@fortawesome/free-solid-svg-icons';
 
 const sortFiles = (files: FileObject[]): FileObject[] => {
     const sortedFiles: FileObject[] = files
@@ -61,7 +63,11 @@ export default () => {
     }, [directory]);
 
     const onSelectAllClick = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSelectedFiles(e.currentTarget.checked ? files?.map((file) => file.name) || [] : []);
+        setSelectedFiles(
+            e.currentTarget.checked
+                ? files?.filter((file) => file.name !== '.RecycleBin').map((file) => file.name) || []
+                : []
+        );
     };
 
     if (error) {
@@ -71,53 +77,94 @@ export default () => {
     return (
         <ServerContentBlock title={'File Manager'} showFlashKey={'files'}>
             <ErrorBoundary>
-                <div className={'flex flex-wrap-reverse md:flex-nowrap mb-4'}>
-                    <FileManagerBreadcrumbs
-                        renderLeft={
+                {/* Hero Header Section */}
+                <div css={tw`relative overflow-hidden rounded-xl bg-gradient-to-r from-slate-800 to-slate-900 p-6 mb-6 border border-slate-700 shadow-2xl`}>
+                    <div css={tw`absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl`}></div>
+                    <div css={tw`relative z-10 flex items-center justify-between`}>
+                        <div css={tw`flex items-center gap-4`}>
+                            <div css={tw`bg-blue-500/20 p-3 rounded-lg border border-blue-500/30`}>
+                                <FontAwesomeIcon icon={faFolderOpen} css={tw`text-blue-400 text-2xl`} />
+                            </div>
+                            <div>
+                                <h2 css={tw`text-xl font-bold text-white tracking-tight`}>File Manager</h2>
+                                <p css={tw`text-slate-400 text-sm mt-1`}>
+                                    Kelola file server Anda dengan mudah dan aman
+                                </p>
+                            </div>
+                        </div>
+                        <div css={tw`hidden md:block`}>
+                            <span css={tw`px-3 py-1 rounded-full bg-slate-700/50 text-slate-300 text-xs border border-slate-600`}>
+                                {files ? `${files.length} items` : 'Loading...'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Modern Toolbar */}
+                <div css={tw`sticky top-2 z-10 bg-slate-800/90 backdrop-blur-md border border-slate-700/50 rounded-lg p-3 mb-4 shadow-lg`}>
+                    <div className={'flex flex-wrap-reverse md:flex-nowrap items-center justify-between gap-3'}>
+                        <div className={'flex items-center gap-2 flex-1'}>
                             <FileActionCheckbox
                                 type={'checkbox'}
-                                css={tw`mx-4`}
-                                checked={selectedFilesLength === (files?.length === 0 ? -1 : files?.length)}
+                                css={tw`mx-2`}
+                                checked={
+                                    selectedFilesLength ===
+                                    (files?.filter((f) => f.name !== '.RecycleBin').length === 0
+                                        ? -1
+                                        : files?.filter((f) => f.name !== '.RecycleBin').length)
+                                }
                                 onChange={onSelectAllClick}
                             />
-                        }
-                    />
-                    <Can action={'file.create'}>
-                        <div className={style.manager_actions}>
-                            <FileManagerStatus />
-                            <NewDirectoryButton />
-                            <UploadButton />
-                            <NavLink to={`/server/${id}/files/new${window.location.hash}`}>
-                                <Button>New File</Button>
-                            </NavLink>
+                            <FileManagerBreadcrumbs />
                         </div>
-                    </Can>
+                        <Can action={'file.create'}>
+                            <div className={style.manager_actions}>
+                                <FileManagerStatus />
+                                <NewDirectoryButton />
+                                <UploadButton />
+                                <NavLink to={`/server/${id}/files/new${window.location.hash}`}>
+                                    <Button css={tw`bg-blue-600 hover:bg-blue-500 text-white border-none shadow-lg shadow-blue-500/30 transition-all duration-200`}>
+                                        <FontAwesomeIcon icon={faFileCode} css={tw`mr-2`} />
+                                        New File
+                                    </Button>
+                                </NavLink>
+                            </div>
+                        </Can>
+                    </div>
                 </div>
             </ErrorBoundary>
             {!files ? (
-                <Spinner size={'large'} centered />
+                <div css={tw`flex items-center justify-center py-20`}>
+                    <Spinner size={'large'} centered />
+                </div>
             ) : (
                 <>
                     {!files.length ? (
-                        <p css={tw`text-sm text-neutral-400 text-center`}>This directory seems to be empty.</p>
+                        <div css={tw`flex flex-col items-center justify-center py-20 bg-slate-800/30 rounded-xl border border-dashed border-slate-700`}>
+                            <FontAwesomeIcon icon={faServer} css={tw`text-slate-600 text-5xl mb-4`} />
+                            <p css={tw`text-lg text-slate-400 font-medium`}>Direktori ini kosong</p>
+                            <p css={tw`text-sm text-slate-500 mt-1`}>Mulai dengan mengunggah file atau membuat direktori baru</p>
+                        </div>
                     ) : (
                         <CSSTransition classNames={'fade'} timeout={150} appear in>
-                            <div>
+                            <div css={tw`grid grid-cols-1 gap-2`}>
                                 {files.length > 250 && (
-                                    <div css={tw`rounded bg-yellow-400 mb-px p-3`}>
-                                        <p css={tw`text-yellow-900 text-sm text-center`}>
-                                            This directory is too large to display in the browser, limiting the output
-                                            to the first 250 files.
+                                    <div css={tw`rounded-lg bg-amber-500/10 border border-amber-500/20 p-4 mb-2 flex items-center gap-3`}>
+                                        <FontAwesomeIcon icon={faServer} css={tw`text-amber-500 text-xl`} />
+                                        <p css={tw`text-amber-200 text-sm`}>
+                                            Direktori terlalu besar untuk ditampilkan sepenuhnya. Menampilkan 250 file pertama.
                                         </p>
                                     </div>
                                 )}
-                                {sortFiles(files.slice(0, 250)).map((file) => (
-                                    file.name === '.RecycleBin' ? (
-                                        <RecycleBinRow key={file.key} />
-                                    ) : (
-                                        <FileObjectRow key={file.key} file={file} />
-                                    )
-                                ))}
+                                <div css={tw`grid grid-cols-1 gap-2`}>
+                                    {sortFiles(files.slice(0, 250)).map((file) => (
+                                        file.name === '.RecycleBin' ? (
+                                            <RecycleBinRow key={file.key} />
+                                        ) : (
+                                            <FileObjectRow key={file.key} file={file} />
+                                        )
+                                    ))}
+                                </div>
                                 <MassActionsBar />
                             </div>
                         </CSSTransition>
