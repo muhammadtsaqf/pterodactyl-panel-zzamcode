@@ -42,9 +42,9 @@ export default () => {
                             <div>
                                 <Label css={tw`text-xs text-neutral-400 uppercase tracking-wider mb-2 block`}>Server Address</Label>
                                 <CopyOnClick text={`sftp://${ip(sftp.ip)}:${sftp.port}`}>
-                                    <div css={tw`group relative`}>
+                                    <div className="group relative">
                                         <Input type={'text'} value={`sftp://${ip(sftp.ip)}:${sftp.port}`} readOnly css={tw`pr-10 cursor-pointer`} />
-                                        <div css={tw`absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 group-hover:text-blue-400 transition-colors`}>
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 group-hover:text-blue-400 transition-colors">
                                             <FontAwesomeIcon icon={faKey} />
                                         </div>
                                     </div>
@@ -54,9 +54,9 @@ export default () => {
                             <div>
                                 <Label css={tw`text-xs text-neutral-400 uppercase tracking-wider mb-2 block`}>Username</Label>
                                 <CopyOnClick text={`${username}.${id}`}>
-                                    <div css={tw`group relative`}>
+                                    <div className="group relative">
                                         <Input type={'text'} value={`${username}.${id}`} readOnly css={tw`pr-10 cursor-pointer`} />
-                                        <div css={tw`absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 group-hover:text-blue-400 transition-colors`}>
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 group-hover:text-blue-400 transition-colors">
                                             <FontAwesomeIcon icon={faUser} />
                                         </div>
                                     </div>
