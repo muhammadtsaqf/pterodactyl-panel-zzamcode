@@ -1,6 +1,5 @@
 import React from 'react';
 import { ServerContext } from '@/state/server';
-import TitledGreyBox from '@/components/elements/TitledGreyBox';
 import { Field as FormikField, Form, Formik, FormikHelpers, useFormikContext } from 'formik';
 import { Actions, useStoreActions } from 'easy-peasy';
 import renameServer from '@/api/server/renameServer';
@@ -14,6 +13,8 @@ import tw from 'twin.macro';
 import Label from '@/components/elements/Label';
 import FormikFieldWrapper from '@/components/elements/FormikFieldWrapper';
 import { Textarea } from '@/components/elements/Input';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSave } from '@fortawesome/free-solid-svg-icons';
 
 interface Values {
     name: string;
@@ -24,21 +25,24 @@ const RenameServerBox = () => {
     const { isSubmitting } = useFormikContext<Values>();
 
     return (
-        <TitledGreyBox title={'Change Server Details'} css={tw`relative`}>
+        <div css={tw`relative`}>
             <SpinnerOverlay visible={isSubmitting} />
-            <Form css={tw`mb-0`}>
+            <Form css={tw`mb-0 space-y-6`}>
                 <Field id={'name'} name={'name'} label={'Server Name'} type={'text'} />
-                <div css={tw`mt-6`}>
-                    <Label>Server Description</Label>
+                <div>
+                    <Label css={tw`text-xs text-neutral-400 uppercase tracking-wider mb-2 block`}>Server Description</Label>
                     <FormikFieldWrapper name={'description'}>
-                        <FormikField as={Textarea} name={'description'} rows={3} />
+                        <FormikField as={Textarea} name={'description'} rows={3} css={tw`bg-neutral-900/50 border-neutral-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500`} />
                     </FormikFieldWrapper>
                 </div>
-                <div css={tw`mt-6 text-right`}>
-                    <Button type={'submit'}>Save</Button>
+                <div css={tw`flex justify-end pt-2`}>
+                    <Button type={'submit'} css={tw`bg-blue-600 hover:bg-blue-500 text-white border-none shadow-lg transition-all duration-200`}>
+                        <FontAwesomeIcon icon={faSave} css={tw`mr-2`} />
+                        Save Changes
+                    </Button>
                 </div>
             </Form>
-        </TitledGreyBox>
+        </div>
     );
 };
 
