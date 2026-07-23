@@ -78,7 +78,7 @@ export default () => {
         <ServerContentBlock title={'File Manager'} showFlashKey={'files'}>
             <ErrorBoundary>
                 {/* Hero Header Section */}
-                <div css={tw`relative overflow-hidden rounded-xl bg-gradient-to-r from-slate-800 to-slate-900 p-6 mb-6 border border-slate-700 shadow-2xl`}>
+                <div css={tw`relative overflow-hidden rounded-xl bg-gradient-to-r from-neutral-800 to-neutral-900 p-6 mb-6 border border-neutral-700 shadow-2xl`}>
                     <div css={tw`absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl`}></div>
                     <div css={tw`relative z-10 flex items-center justify-between`}>
                         <div css={tw`flex items-center gap-4`}>
@@ -87,13 +87,13 @@ export default () => {
                             </div>
                             <div>
                                 <h2 css={tw`text-xl font-bold text-white tracking-tight`}>File Manager</h2>
-                                <p css={tw`text-slate-400 text-sm mt-1`}>
+                                <p css={tw`text-neutral-400 text-sm mt-1`}>
                                     Kelola file server Anda dengan mudah dan aman
                                 </p>
                             </div>
                         </div>
                         <div css={tw`hidden md:block`}>
-                            <span css={tw`px-3 py-1 rounded-full bg-slate-700/50 text-slate-300 text-xs border border-slate-600`}>
+                            <span css={tw`px-3 py-1 rounded-full bg-neutral-700/50 text-neutral-300 text-xs border border-neutral-600`}>
                                 {files ? `${files.length} items` : 'Loading...'}
                             </span>
                         </div>
@@ -101,7 +101,7 @@ export default () => {
                 </div>
 
                 {/* Modern Toolbar */}
-                <div css={tw`sticky top-2 z-10 bg-slate-800/90 backdrop-blur-md border border-slate-700/50 rounded-lg p-3 mb-4 shadow-lg`}>
+                <div css={tw`sticky top-2 z-10 bg-neutral-800/90 backdrop-blur-md border border-neutral-700/50 rounded-lg p-3 mb-4 shadow-lg`}>
                     <div className={'flex flex-wrap-reverse md:flex-nowrap items-center justify-between gap-3'}>
                         <div className={'flex items-center gap-2 flex-1'}>
                             <FileActionCheckbox
@@ -140,10 +140,10 @@ export default () => {
             ) : (
                 <>
                     {!files.length ? (
-                        <div css={tw`flex flex-col items-center justify-center py-20 bg-slate-800/30 rounded-xl border border-dashed border-slate-700`}>
-                            <FontAwesomeIcon icon={faServer} css={tw`text-slate-600 text-5xl mb-4`} />
-                            <p css={tw`text-lg text-slate-400 font-medium`}>Direktori ini kosong</p>
-                            <p css={tw`text-sm text-slate-500 mt-1`}>Mulai dengan mengunggah file atau membuat direktori baru</p>
+                        <div css={tw`flex flex-col items-center justify-center py-20 bg-neutral-800/30 rounded-xl border border-dashed border-neutral-700`}>
+                            <FontAwesomeIcon icon={faServer} css={tw`text-neutral-600 text-5xl mb-4`} />
+                            <p css={tw`text-lg text-neutral-400 font-medium`}>Direktori ini kosong</p>
+                            <p css={tw`text-sm text-neutral-500 mt-1`}>Mulai dengan mengunggah file atau membuat direktori baru</p>
                         </div>
                     ) : (
                         <CSSTransition classNames={'fade'} timeout={150} appear in>

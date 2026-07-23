@@ -7,12 +7,12 @@
 }
 
 .file_row {
-    @apply flex items-center cursor-pointer bg-slate-800/40 backdrop-blur-sm rounded-lg mb-1 text-sm no-underline border border-slate-700/50 transition-all duration-200 overflow-hidden;
-    @apply hover:bg-slate-700/60 hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/10 hover:-translate-y-0.5 active:scale-[0.98];
+    @apply flex items-center cursor-pointer bg-neutral-800/40 backdrop-blur-sm rounded-lg mb-1 text-sm no-underline border border-neutral-700/50 transition-all duration-200 overflow-hidden;
+    @apply hover:bg-neutral-700/60 hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/10 hover:-translate-y-0.5 active:scale-[0.98];
     @apply group;
 
     & > .details {
-        @apply flex flex-1 items-center text-slate-300 no-underline px-4 py-3 overflow-hidden truncate transition-colors duration-200;
+        @apply flex flex-1 items-center text-neutral-300 no-underline px-4 py-3 overflow-hidden truncate transition-colors duration-200;
 
         &:not(a) {
             @apply cursor-default;
