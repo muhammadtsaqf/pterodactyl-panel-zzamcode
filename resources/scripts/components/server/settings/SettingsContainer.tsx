@@ -65,8 +65,8 @@ export default () => {
 
                             <div css={tw`pt-4 border-t border-neutral-700/50`}>
                                 <div css={tw`flex items-start gap-3`}>
-                                    <div css={tw`flex-shrink-0 w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/30`}>
-                                        <FontAwesomeIcon icon={faTerminal} css={tw`text-amber-400 text-sm`} />
+                                    <div css={tw`flex-shrink-0 w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center border border-yellow-600`}>
+                                        <FontAwesomeIcon icon={faTerminal} css={tw`text-white text-sm`} />
                                     </div>
                                     <div css={tw`flex-1`}>
                                         <p css={tw`text-sm text-neutral-300`}>
