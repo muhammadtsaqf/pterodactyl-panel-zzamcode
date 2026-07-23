@@ -50,15 +50,15 @@ export default () => {
                 you wish to continue?
             </Dialog.Confirm>
 
-            <div css={tw`flex items-start gap-4 mb-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg`}>
+            <div css={tw`flex items-start gap-4 mb-6 p-4 bg-yellow-50 border border-yellow-500 rounded-lg`}>
                 <div css={tw`flex-shrink-0`}>
-                    <FontAwesomeIcon icon={faExclamationTriangle} css={tw`text-amber-500 text-xl`} />
+                    <FontAwesomeIcon icon={faExclamationTriangle} css={tw`text-yellow-500 text-xl`} />
                 </div>
                 <div>
-                    <h4 css={tw`text-sm font-semibold text-amber-400 mb-1`}>Warning</h4>
-                    <p css={tw`text-sm text-amber-200/80`}>
+                    <h4 css={tw`text-sm font-semibold text-yellow-600 mb-1`}>Warning</h4>
+                    <p css={tw`text-sm text-yellow-700`}>
                         Reinstalling your server will stop it, and then re-run the installation script that initially set it
-                        up. <strong css={tw`font-medium text-amber-200`}>Some files may be deleted or modified during this process, please back up your data before continuing.</strong>
+                        up. <strong css={tw`font-medium text-yellow-800`}>Some files may be deleted or modified during this process, please back up your data before continuing.</strong>
                     </p>
                 </div>
             </div>
