@@ -38,7 +38,6 @@ const FileObjectRow = ({ file }: { file: FileObject }) => (
     <div
         className={styles.file_row}
         key={file.name}
-        css={tw`relative`}
         onContextMenu={(e) => {
             e.preventDefault();
             window.dispatchEvent(new CustomEvent(`pterodactyl:files:ctx:${file.key}`, { detail: e.clientX }));

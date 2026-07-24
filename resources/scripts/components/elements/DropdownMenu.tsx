@@ -1,7 +1,8 @@
-import React, { createRef } from 'react';
+import React, { createRef, useEffect } from 'react';
 import styled from 'styled-components/macro';
 import tw from 'twin.macro';
 import Fade from '@/components/elements/Fade';
+import ReactDOM from 'react-dom';
 
 interface Props {
     children: React.ReactNode;
@@ -19,18 +20,27 @@ export const DropdownButtonRow = styled.button<{ danger?: boolean }>`
 
 interface State {
     posX: number;
+    posY: number;
     visible: boolean;
 }
 
 class DropdownMenu extends React.PureComponent<Props, State> {
     menu = createRef<HTMLDivElement>();
+    portalRoot = document.createElement('div');
 
     state: State = {
         posX: 0,
+        posY: 0,
         visible: false,
     };
 
+    constructor(props: Props) {
+        super(props);
+        document.body.appendChild(this.portalRoot);
+    }
+
     componentWillUnmount() {
+        document.body.removeChild(this.portalRoot);
         this.removeListeners();
     }
 
@@ -40,7 +50,11 @@ class DropdownMenu extends React.PureComponent<Props, State> {
         if (this.state.visible && !prevState.visible && menu) {
             document.addEventListener('click', this.windowListener);
             document.addEventListener('contextmenu', this.contextMenuListener);
-            menu.style.left = `${Math.round(this.state.posX - menu.clientWidth)}px`;
+
+            let left = Math.round(this.state.posX - 12 * 16);
+            if (left < 8) left = 8;
+            menu.style.left = `${left}px`;
+            menu.style.top = `${this.state.posY}px`;
         }
 
         if (!this.state.visible && prevState.visible) {
@@ -55,7 +69,12 @@ class DropdownMenu extends React.PureComponent<Props, State> {
 
     onClickHandler = (e: React.MouseEvent<any, MouseEvent>) => {
         e.preventDefault();
-        this.triggerMenu(e.clientX);
+        e.stopPropagation();
+        this.setState({
+            posX: e.clientX,
+            posY: e.clientY,
+            visible: !this.state.visible,
+        });
     };
 
     contextMenuListener = () => this.setState({ visible: false });
@@ -67,39 +86,33 @@ class DropdownMenu extends React.PureComponent<Props, State> {
             return;
         }
 
-        if (e.target === menu || menu.contains(e.target as Node)) {
+        if (menu.contains(e.target as Node)) {
             return;
         }
 
-        if (e.target !== menu && !menu.contains(e.target as Node)) {
-            this.setState({ visible: false });
-        }
+        this.setState({ visible: false });
     };
-
-    triggerMenu = (posX: number) =>
-        this.setState((s) => ({
-            posX: !s.visible ? posX : s.posX,
-            visible: !s.visible,
-        }));
 
     render() {
         return (
-            <div>
+            <>
                 {this.props.renderToggle(this.onClickHandler)}
-                <Fade timeout={150} in={this.state.visible} unmountOnExit>
-                    <div
-                        ref={this.menu}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            this.setState({ visible: false });
-                        }}
-                        style={{ width: '12rem' }}
-                        css={tw`absolute bg-neutral-800 p-2 rounded border border-neutral-600 shadow-2xl text-neutral-300 z-[999]`}
-                    >
-                        {this.props.children}
-                    </div>
-                </Fade>
-            </div>
+                {ReactDOM.createPortal(
+                    <Fade timeout={150} in={this.state.visible} unmountOnExit>
+                        <div
+                            ref={this.menu}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                            }}
+                            style={{ width: '12rem' }}
+                            css={tw`fixed bg-neutral-800 p-2 rounded border border-neutral-600 shadow-2xl text-neutral-300 z-[9999]`}
+                        >
+                            {this.props.children}
+                        </div>
+                    </Fade>,
+                    this.portalRoot
+                )}
+            </>
         );
     }
 }
