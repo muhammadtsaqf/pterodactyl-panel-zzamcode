@@ -7,7 +7,7 @@
 }
 
 .file_row {
-    @apply flex items-center cursor-pointer bg-neutral-800/40 backdrop-blur-sm rounded-lg mb-1 text-sm no-underline border border-neutral-700/50 transition-all duration-200 overflow-hidden;
+    @apply flex items-center cursor-pointer bg-neutral-800/40 backdrop-blur-sm rounded-lg mb-1 text-sm no-underline border border-neutral-700/50 transition-all duration-200;
     @apply hover:bg-neutral-700/60 hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/10 hover:-translate-y-0.5 active:scale-[0.98];
 
     & > .details {

@@ -146,7 +146,9 @@ const FileDropdownMenu = ({ file }: { file: FileObject }) => {
         clearFlashes('files');
 
         decompressFiles(uuid, directory, file.name)
-            .then(() => mutate())
+            .then(() => {
+                mutate();
+            })
             .catch((error) => clearAndAddHttpError({ key: 'files', error }))
             .then(() => setShowSpinner(false));
     };
