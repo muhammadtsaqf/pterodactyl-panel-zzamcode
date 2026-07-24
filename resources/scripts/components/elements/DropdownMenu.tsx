@@ -1,4 +1,4 @@
-import React, { createRef, useEffect } from 'react';
+import React, { createRef } from 'react';
 import styled from 'styled-components/macro';
 import tw from 'twin.macro';
 import Fade from '@/components/elements/Fade';
@@ -91,6 +91,14 @@ class DropdownMenu extends React.PureComponent<Props, State> {
         }
 
         this.setState({ visible: false });
+    };
+
+    triggerMenu = (posX: number, posY?: number) => {
+        this.setState((s) => ({
+            posX: !s.visible ? posX : s.posX,
+            posY: !s.visible ? (posY || s.posY) : s.posY,
+            visible: !s.visible,
+        }));
     };
 
     render() {

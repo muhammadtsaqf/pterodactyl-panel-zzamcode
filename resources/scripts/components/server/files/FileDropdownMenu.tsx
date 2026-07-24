@@ -69,7 +69,7 @@ const FileDropdownMenu = ({ file }: { file: FileObject }) => {
 
     useEventListener(`pterodactyl:files:ctx:${file.key}`, (e: CustomEvent) => {
         if (onClickRef.current) {
-            onClickRef.current.triggerMenu(e.detail);
+            onClickRef.current.triggerMenu(e.detail.x, e.detail.y);
         }
     });
 
