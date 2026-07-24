@@ -38,6 +38,7 @@ const FileObjectRow = ({ file }: { file: FileObject }) => (
     <div
         className={styles.file_row}
         key={file.name}
+        css={tw`relative`}
         onContextMenu={(e) => {
             e.preventDefault();
             window.dispatchEvent(new CustomEvent(`pterodactyl:files:ctx:${file.key}`, { detail: e.clientX }));
@@ -62,9 +63,7 @@ const FileObjectRow = ({ file }: { file: FileObject }) => (
                     : formatDistanceToNow(file.modifiedAt, { addSuffix: true })}
             </div>
         </Clickable>
-        <div css={tw`relative`} style={{ zIndex: 100 }}>
-            <FileDropdownMenu file={file} />
-        </div>
+        <FileDropdownMenu file={file} />
     </div>
 );
 

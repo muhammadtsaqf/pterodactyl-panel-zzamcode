@@ -84,7 +84,7 @@ class DropdownMenu extends React.PureComponent<Props, State> {
 
     render() {
         return (
-            <div css={tw`relative inline-block`}>
+            <div>
                 {this.props.renderToggle(this.onClickHandler)}
                 <Fade timeout={150} in={this.state.visible} unmountOnExit>
                     <div
@@ -93,7 +93,7 @@ class DropdownMenu extends React.PureComponent<Props, State> {
                             e.stopPropagation();
                             this.setState({ visible: false });
                         }}
-                        style={{ width: '12rem', right: 0, top: '100%' }}
+                        style={{ width: '12rem' }}
                         css={tw`absolute bg-neutral-800 p-2 rounded border border-neutral-600 shadow-2xl text-neutral-300 z-[999]`}
                     >
                         {this.props.children}
