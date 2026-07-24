@@ -62,7 +62,9 @@ const FileObjectRow = ({ file }: { file: FileObject }) => (
                     : formatDistanceToNow(file.modifiedAt, { addSuffix: true })}
             </div>
         </Clickable>
-        <FileDropdownMenu file={file} />
+        <div css={tw`relative`} style={{ zIndex: 100 }}>
+            <FileDropdownMenu file={file} />
+        </div>
     </div>
 );
 
