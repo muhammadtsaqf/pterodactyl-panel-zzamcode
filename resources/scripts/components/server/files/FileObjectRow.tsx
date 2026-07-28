@@ -40,6 +40,7 @@ const FileObjectRow = ({ file }: { file: FileObject }) => (
         key={file.name}
         onContextMenu={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             window.dispatchEvent(new CustomEvent(`pterodactyl:files:ctx:${file.key}`, { detail: { x: e.clientX, y: e.clientY } }));
         }}
     >

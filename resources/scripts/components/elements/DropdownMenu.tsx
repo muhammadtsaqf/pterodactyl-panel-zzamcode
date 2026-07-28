@@ -77,7 +77,15 @@ class DropdownMenu extends React.PureComponent<Props, State> {
         });
     };
 
-    contextMenuListener = () => this.setState({ visible: false });
+    contextMenuListener = (e: MouseEvent) => {
+        const menu = this.menu.current;
+
+        if (menu && menu.contains(e.target as Node)) {
+            return;
+        }
+
+        this.setState({ visible: false });
+    };
 
     windowListener = (e: MouseEvent) => {
         const menu = this.menu.current;
