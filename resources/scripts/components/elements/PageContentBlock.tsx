@@ -19,33 +19,36 @@ const PageContentBlock: React.FC<PageContentBlockProps> = ({ title, showFlashKey
 
     return (
         <CSSTransition timeout={150} classNames={'fade'} appear in>
-            <>
-                <ContentContainer css={tw`my-4 sm:my-10`} className={className}>
+            <div css={tw`flex flex-col min-h-screen`}>
+                <ContentContainer css={tw`flex-1 my-4 sm:my-10`} className={className}>
                     {showFlashKey && <FlashMessageRender byKey={showFlashKey} css={tw`mb-4`} />}
                     {children}
                 </ContentContainer>
-                <ContentContainer css={tw`mb-4`}>
-                    <p css={tw`text-center text-neutral-500 text-xs`}>
-                        <a
-                            rel={'noopener nofollow noreferrer'}
-                            href={'https://pterodactyl.io'}
-                            target={'_blank'}
-                            css={tw`no-underline text-neutral-500 hover:text-neutral-300`}
-                        >
-                            Pterodactyl Software
-                        </a>
-                        &nbsp;&copy; {new Date().getFullYear()} | Modified by&nbsp;
-                        <a
-                            rel={'noopener nofollow noreferrer'}
-                            href={'https://transaksikita.com'}
-                            target={'_blank'}
-                            css={tw`no-underline text-neutral-500 hover:text-neutral-300`}
-                        >
-                            zzamcode
-                        </a>
-                    </p>
+                <ContentContainer css={tw`pb-6 pt-4`}>
+                    <div css={tw`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-center`}>
+                        <p css={tw`text-neutral-500 text-xs tracking-wide`}>
+                            <a
+                                rel={'noopener nofollow noreferrer'}
+                                href={'https://pterodactyl.io'}
+                                target={'_blank'}
+                                css={tw`no-underline text-neutral-500 hover:text-neutral-300 transition-colors duration-200`}
+                            >
+                                Pterodactyl Software
+                            </a>
+                            <span css={tw`text-neutral-600`}>&nbsp;© {new Date().getFullYear()}&nbsp;</span>
+                            <span css={tw`text-neutral-600`}>| Modified by&nbsp;</span>
+                            <a
+                                rel={'noopener nofollow noreferrer'}
+                                href={'https://transaksikita.com'}
+                                target={'_blank'}
+                                css={tw`no-underline text-neutral-500 hover:text-neutral-300 transition-colors duration-200 font-medium`}
+                            >
+                                zzamcode
+                            </a>
+                        </p>
+                    </div>
                 </ContentContainer>
-            </>
+            </div>
         </CSSTransition>
     );
 };
