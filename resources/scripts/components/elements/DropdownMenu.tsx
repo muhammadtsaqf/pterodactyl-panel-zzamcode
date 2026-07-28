@@ -112,7 +112,7 @@ class DropdownMenu extends React.PureComponent<Props, State> {
                             onClick={(e) => {
                                 e.stopPropagation();
                             }}
-                            style={{ width: '12rem' }}
+                            style={{ width: '12rem', maxHeight: 'calc(100vh - 16px)', overflowY: 'auto' }}
                             css={tw`fixed bg-neutral-800 p-2 rounded border border-neutral-600 shadow-2xl text-neutral-300 z-[9999]`}
                         >
                             {this.props.children}
