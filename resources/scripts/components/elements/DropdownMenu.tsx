@@ -51,10 +51,28 @@ class DropdownMenu extends React.PureComponent<Props, State> {
             document.addEventListener('click', this.windowListener);
             document.addEventListener('contextmenu', this.contextMenuListener);
 
-            let left = Math.round(this.state.posX - 12 * 16);
+            const menuWidth = 12 * 16; // 12rem
+            const menuHeight = menu.offsetHeight || 200;
+
+            // Horizontal positioning
+            let left = Math.round(this.state.posX - menuWidth);
             if (left < 8) left = 8;
+            if (left + menuWidth > window.innerWidth - 8) {
+                left = window.innerWidth - menuWidth - 8;
+            }
             menu.style.left = `${left}px`;
-            menu.style.top = `${this.state.posY}px`;
+
+            // Vertical positioning - flip to top if would be cut off
+            const viewportHeight = window.innerHeight;
+            const wouldOverflow = this.state.posY + menuHeight > viewportHeight;
+            if (wouldOverflow) {
+                // Show above the cursor
+                let top = Math.round(this.state.posY - menuHeight);
+                if (top < 8) top = 8;
+                menu.style.top = `${top}px`;
+            } else {
+                menu.style.top = `${this.state.posY}px`;
+            }
         }
 
         if (!this.state.visible && prevState.visible) {
